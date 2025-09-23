@@ -25,14 +25,118 @@
 
   <main class="container blog-container">
     <h1 class="page-title">🛠️ Projects</h1>
-    <p class="muted">Curated set of experiments and apps.</p>
-    <div class="grid-cards">
-      <div class="tile"><h3>Galactic Web App</h3><p>Real‑time satellite tracker.</p></div>
-      <div class="tile"><h3>AI Nebula</h3><p>Constellation classifier demo.</p></div>
-      <div class="tile"><h3>Hyperdrive UI</h3><p>Component set with motion.</p></div>
+    <div class="page-intro">
+      <p class="muted">Curated set of experiments and apps.</p>
+      <div class="page-actions">
+        <button id="addProjectBtn" class="btn-gradient" aria-haspopup="dialog" aria-controls="projectModal">+ Add Project</button>
+      </div>
+    </div>
+
+    <section class="toolbar" aria-label="Project Filters and Sorting">
+      <div class="toolbar-row">
+        <div class="filters">
+          <select id="filterCategory" aria-label="Filter by Category">
+            <option value="">All Categories</option>
+            <option>web</option>
+            <option>mobile</option>
+            <option>ai</option>
+            <option>design</option>
+            <option>backend</option>
+            <option>frontend</option>
+            <option>fullstack</option>
+            <option>game</option>
+            <option>blockchain</option>
+            <option>iot</option>
+            <option>other</option>
+          </select>
+          <select id="filterStatus" aria-label="Filter by Status">
+            <option value="">All Statuses</option>
+            <option value="planning">Planning</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="on-hold">On Hold</option>
+            <option value="archived">Archived</option>
+          </select>
+          <select id="sortBy" aria-label="Sort by">
+            <option value="-createdAt">Newest</option>
+            <option value="createdAt">Oldest</option>
+            <option value="-metrics.views">Most Viewed</option>
+            <option value="-metrics.likes">Most Liked</option>
+          </select>
+        </div>
+        <div class="search">
+          <input id="searchInput" type="search" placeholder="Search projects..." aria-label="Search projects" />
+        </div>
+      </div>
+    </section>
+    <div id="projectsGrid" class="grid-cards" role="list"></div>
+
+    <!-- Details Modal (read-only) -->
+    <div id="detailsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-card">
+        <header class="modal-header">
+          <h2 id="detailsTitle">Project Details</h2>
+          <button class="icon-btn" id="closeDetails" aria-label="Close">✕</button>
+        </header>
+        <div class="details-body">
+          <div id="detailsContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload/Edit Modal (same as Portfolio) -->
+    <div id="projectModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-card">
+        <header class="modal-header">
+          <h2 id="projectModalTitle">Add Project</h2>
+          <button class="icon-btn" id="closeProjectModal" aria-label="Close modal">✕</button>
+        </header>
+        <form id="projectForm" class="form-grid" novalidate>
+          <div class="field"><label for="projTitle">Title</label><input id="projTitle" name="title" type="text" required maxlength="100" /></div>
+          <div class="field"><label for="projDesc">Description</label><textarea id="projDesc" name="description" rows="4" required maxlength="1000"></textarea></div>
+          <div class="field two-col">
+            <div><label for="projCategory">Category</label>
+              <select id="projCategory" name="category" required>
+                <option value="" disabled selected>Select category</option>
+                <option>web</option><option>mobile</option><option>ai</option><option>design</option><option>backend</option><option>frontend</option><option>fullstack</option><option>game</option><option>blockchain</option><option>iot</option><option>other</option>
+              </select>
+            </div>
+            <div><label for="projLive">Live/Demo Link</label><input id="projLive" name="live" type="url" placeholder="https://your-demo.com" /></div>
+          </div>
+          <div class="field two-col">
+            <div><label for="projTags">Tags (comma‑separated)</label><input id="projTags" name="tags" type="text" /></div>
+            <div><label for="projTech">Technologies (comma‑separated)</label><input id="projTech" name="technologies" type="text" /></div>
+          </div>
+          <div class="field">
+            <span class="label">Visibility</span>
+            <div class="chip-row">
+              <label class="chip"><input type="radio" name="visibility" value="public" checked /> Public</label>
+              <label class="chip"><input type="radio" name="visibility" value="private" /> Private</label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Images</label>
+            <div id="dropzone" class="dropzone" tabindex="0">
+              <input id="fileInput" type="file" accept="image/*" multiple hidden />
+              <div class="dz-instructions">
+                <strong>Drag & drop</strong> images here, or <button type="button" class="link-btn" id="chooseFiles">browse</button>
+              </div>
+            </div>
+            <div id="previewGrid" class="preview-grid" aria-live="polite"></div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn-secondary" id="cancelProject">Cancel</button>
+            <button type="submit" class="btn-gradient">Save Project</button>
+          </div>
+          <div id="formMsg" class="form-message" aria-live="polite"></div>
+        </form>
+      </div>
     </div>
   </main>
 
   <footer class="site-footer">© <span id="year"></span> Cosmic DevSpace</footer>
   <script src="./js/app.js"></script>
+  <script src="./js/projects.js"></script>
 </body></html>

@@ -30,12 +30,123 @@
 
   <main class="container blog-container" role="main">
     <h1 class="page-title">📝 Cosmic Blog</h1>
-    <div class="grid-cards">
-      <article class="tile"><h3>Future of Space‑UI</h3><p>Cosmic gradients, motion, and depth…</p></article>
-      <article class="tile"><h3>Particles 101</h3><p>Making starfields feel alive.</p></article>
+
+    <div class="page-intro">
+      <p class="muted">Stories, tips, and tutorials from the cosmos.</p>
+      <div class="page-actions">
+        <button id="newPostBtn" class="btn-gradient" aria-haspopup="dialog" aria-controls="editorModal">+ New Post</button>
+      </div>
+    </div>
+
+    <section class="toolbar" aria-label="Blog Filters and Sorting">
+      <div class="toolbar-row">
+        <div class="filters">
+          <select id="filterCategory" aria-label="Filter by Category">
+            <option value="">All Categories</option>
+            <option>announcement</option>
+            <option>tutorial</option>
+            <option>design</option>
+            <option>dev</option>
+            <option>news</option>
+          </select>
+          <select id="sortBy" aria-label="Sort by">
+            <option value="-date">Newest</option>
+            <option value="date">Oldest</option>
+            <option value="-views">Most Viewed</option>
+          </select>
+        </div>
+        <div class="search">
+          <input id="searchInput" type="search" placeholder="Search posts..." aria-label="Search posts" />
+        </div>
+      </div>
+    </section>
+
+    <div id="blogGrid" class="grid-cards" role="list"></div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-card">
+        <header class="modal-header">
+          <h2 id="detailsTitle">Post</h2>
+          <button class="icon-btn" id="closeDetails" aria-label="Close">✕</button>
+        </header>
+        <article id="detailsContent" class="post-content"></article>
+        <section class="share-row">
+          <button id="copyLinkBtn" class="btn-secondary">Copy Link</button>
+        </section>
+        <section id="commentsSection" class="comments">
+          <h3>Comments</h3>
+          <div id="commentsList"></div>
+          <form id="commentForm" class="form-inline" novalidate>
+            <div class="grid">
+              <div class="field" style="grid-column: 1 / -1;">
+                <label for="commentText">Your Comment</label>
+                <textarea id="commentText" rows="3" placeholder="Share your thoughts..."></textarea>
+              </div>
+              <button type="submit" class="btn-gradient">Post Comment</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+
+    <!-- Editor Modal -->
+    <div id="editorModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-card">
+        <header class="modal-header">
+          <h2 id="editorTitle">New Post</h2>
+          <button class="icon-btn" id="closeEditor" aria-label="Close">✕</button>
+        </header>
+        <form id="postForm" class="form-grid" novalidate>
+          <div class="field"><label for="postTitle">Title</label><input id="postTitle" required maxlength="120" /></div>
+          <div class="field two-col">
+            <div><label for="postCategory">Category</label>
+              <select id="postCategory">
+                <option>announcement</option>
+                <option>tutorial</option>
+                <option>design</option>
+                <option>dev</option>
+                <option>news</option>
+              </select>
+            </div>
+            <div><label for="postTags">Tags (comma‑separated)</label><input id="postTags" placeholder="e.g., cosmos, tips" /></div>
+          </div>
+          <div class="field">
+            <label>Cover Image</label>
+            <div class="dropzone" id="coverDrop">
+              <input id="coverInput" type="file" accept="image/*" hidden />
+              <div class="dz-instructions">Drag & drop cover here, or <button type="button" class="link-btn" id="chooseCover">browse</button></div>
+            </div>
+            <div id="coverPreview" class="preview-grid"></div>
+          </div>
+          <div class="field">
+            <label>Editor</label>
+            <div class="editor-toolbar">
+              <button type="button" data-cmd="bold"><b>B</b></button>
+              <button type="button" data-cmd="italic"><i>I</i></button>
+              <button type="button" data-cmd="formatBlock" data-val="h2">H2</button>
+              <button type="button" data-cmd="formatBlock" data-val="h3">H3</button>
+              <button type="button" id="insertLink">Link</button>
+              <button type="button" id="insertCode">Code</button>
+              <button type="button" id="insertImage">Image</button>
+              <button type="button" id="togglePreview" class="btn-secondary">Preview</button>
+            </div>
+            <div id="postEditor" class="editor" contenteditable="true" aria-multiline="true"></div>
+            <article id="postPreview" class="post-content" hidden></article>
+          </div>
+          <div class="actions">
+            <button type="button" id="cancelPost" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-gradient">Publish</button>
+          </div>
+          <div id="editorMsg" class="form-message" aria-live="polite"></div>
+        </form>
+      </div>
     </div>
   </main>
 
   <footer class="site-footer">© <span id="year"></span> Cosmic DevSpace</footer>
   <script src="./js/app.js"></script>
+  <script src="./js/blog.js"></script>
 </body></html>

@@ -28,7 +28,12 @@
 
   <main class="container blog-container" role="main" aria-label="Portfolio section">
     <h1 class="page-title">✨ Portfolio</h1>
-    <p class="muted" aria-label="Page description">Featured work from the Cosmic collection.</p>
+    <div class="page-intro">
+      <p class="muted" aria-label="Page description">Featured work from the Cosmic collection.</p>
+      <div class="page-actions">
+        <button id="addProjectBtn" class="btn-gradient" aria-haspopup="dialog" aria-controls="projectModal">+ Add Project</button>
+      </div>
+    </div>
     <div class="grid-cards" role="list">
       <div class="tile" role="listitem" tabindex="0" aria-label="Project: Cosmic E-commerce - Space-themed store with clean UI">
         <h3>Cosmic E‑commerce</h3>
@@ -43,6 +48,82 @@
         <p>Elegant docs site with search.</p>
       </div>
     </div>
+
+    <!-- Upload/Edit Project Modal -->
+    <div id="projectModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-card">
+        <header class="modal-header">
+          <h2 id="projectModalTitle">Add Project</h2>
+          <button class="icon-btn" id="closeProjectModal" aria-label="Close modal">✕</button>
+        </header>
+        <form id="projectForm" class="form-grid" novalidate>
+          <div class="field">
+            <label for="projTitle">Title</label>
+            <input id="projTitle" name="title" type="text" required maxlength="100" placeholder="e.g., Galaxy Shop" />
+          </div>
+          <div class="field">
+            <label for="projDesc">Description</label>
+            <textarea id="projDesc" name="description" rows="4" required maxlength="1000" placeholder="What makes this project cosmic?" ></textarea>
+          </div>
+          <div class="field two-col">
+            <div>
+              <label for="projCategory">Category</label>
+              <select id="projCategory" name="category" required>
+                <option value="" disabled selected>Select category</option>
+                <option>web</option>
+                <option>mobile</option>
+                <option>ai</option>
+                <option>design</option>
+                <option>backend</option>
+                <option>frontend</option>
+                <option>fullstack</option>
+                <option>game</option>
+                <option>blockchain</option>
+                <option>iot</option>
+                <option>other</option>
+              </select>
+            </div>
+            <div>
+              <label for="projLive">Live/Demo Link</label>
+              <input id="projLive" name="live" type="url" placeholder="https://your-demo.com" />
+            </div>
+          </div>
+          <div class="field two-col">
+            <div>
+              <label for="projTags">Tags (comma‑separated)</label>
+              <input id="projTags" name="tags" type="text" placeholder="e.g., ecommerce, ui, cosmos" />
+            </div>
+            <div>
+              <label for="projTech">Technologies (comma‑separated)</label>
+              <input id="projTech" name="technologies" type="text" placeholder="e.g., React, Node.js, MongoDB" />
+            </div>
+          </div>
+          <div class="field">
+            <span class="label">Visibility</span>
+            <div class="chip-row">
+              <label class="chip"><input type="radio" name="visibility" value="public" checked /> Public</label>
+              <label class="chip"><input type="radio" name="visibility" value="private" /> Private</label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Images</label>
+            <div id="dropzone" class="dropzone" tabindex="0">
+              <input id="fileInput" type="file" accept="image/*" multiple hidden />
+              <div class="dz-instructions">
+                <strong>Drag & drop</strong> images here, or <button type="button" class="link-btn" id="chooseFiles">browse</button>
+              </div>
+            </div>
+            <div id="previewGrid" class="preview-grid" aria-live="polite"></div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn-secondary" id="cancelProject">Cancel</button>
+            <button type="submit" class="btn-gradient">Save Project</button>
+          </div>
+          <div id="formMsg" class="form-message" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -50,6 +131,7 @@
   </footer>
 
   <script src="./js/app.js"></script>
+  <script src="./js/portfolio.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
