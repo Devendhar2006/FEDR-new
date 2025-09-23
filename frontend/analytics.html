@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cosmic DevSpace • Analytics</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head><body class="analytics-page">
+  <header class="site-header">
+    <div class="logo">🚀 Cosmic DevSpace</div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="projects.html">Projects</a>
+      <a href="blog.html">Blog</a>
+      <a href="guestbook.html">Guestbook</a>
+      <a href="analytics.html" class="active">Analytics</a>
+      <a href="contact.html">Contact</a>
+      <span class="auth-links">
+        <a href="login.html" id="loginLink">Sign In</a>
+        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
+        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
+      </span>
+    </nav>
+  </header>
+
+  <main class="container analytics-container" role="main">
+    <h1 class="page-title">📊 Tiny Client‑Analytics</h1>
+    <div class="insights">
+      <span class="badge" id="badgeTotalViews">0 Total Views</span>
+      <span class="badge" id="badgeUnique">0 Unique Pages</span>
+      <span class="badge" id="badgeTopPage">Top: —</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">👁️</div>
+        <div class="kpi-label">Total Visits</div>
+        <div id="visits" class="kpi-value">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">Total Views</div>
+        <div id="totalViews" class="kpi-value">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🗺️</div>
+        <div class="kpi-label">Unique Pages</div>
+        <div id="uniquePages" class="kpi-value">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">⏱️</div>
+        <div class="kpi-label">Last Visit</div>
+        <div id="lastVisit" class="kpi-value">—</div>
+      </div>
+    </div>
+
+    <section class="chart-card">
+      <div class="chart-header">
+        <h3>Page Views (Local Demo)</h3>
+        <div class="chart-toolbar">
+          <button id="refreshChart" class="btn-secondary">Refresh</button>
+        </div>
+      </div>
+      <div class="chart-legend" id="legend"></div>
+      <canvas id="barChart" width="900" height="260"></canvas>
+    </section>
+
+    <section class="tile" style="margin-top:16px;">
+      <h3 style="margin:0 0 8px;">Pages Seen</h3>
+      <ul id="pages" class="muted"></ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">© <span id="year"></span> Cosmic DevSpace</footer>
+  <script src="./js/app.js"></script>
+  <script>
+    const kVisits='cds_visits';
+    const kLast='cds_last';
+    const kPages='cds_pages';
+
+    function getCounts(){
+      const pagesRaw = JSON.parse(localStorage.getItem(kPages)||'[]');
+      const pages=[...new Set(pagesRaw)];
+      const counts=pages.map(p=>({label:p, value:(+localStorage.getItem('views_'+p)||0)}));
+      return { pages, counts };
+    }
+
+    function render(){
+      document.getElementById('visits').textContent = localStorage.getItem(kVisits)||'0';
+      const ts=+(localStorage.getItem(kLast)||0);
+      document.getElementById('lastVisit').textContent = ts? new Date(ts).toLocaleString(): '—';
+
+      const ul=document.getElementById('pages'); ul.innerHTML='';
+      const { pages, counts } = getCounts();
+      pages.forEach(p=>{ const li=document.createElement('li'); li.textContent=p; ul.appendChild(li); });
+
+      const totalViews = counts.reduce((a,c)=>a+c.value,0);
+      const top = counts.length? counts.slice().sort((a,b)=>b.value-a.value)[0]: null;
+      document.getElementById('totalViews').textContent = String(totalViews);
+      document.getElementById('uniquePages').textContent = String(pages.length);
+      document.getElementById('badgeTotalViews').textContent = `${totalViews} Total Views`;
+      document.getElementById('badgeUnique').textContent = `${pages.length} Unique Pages`;
+      document.getElementById('badgeTopPage').textContent = `Top: ${top? `${top.label} (${top.value})` : '—'}`;
+    }
+    render();
+
+    // Fancy bar chart using localStorage counts per page
+    function drawChart(animate=true){
+      const canvas=document.getElementById('barChart');
+      const ctx=canvas.getContext('2d');
+      const { counts } = getCounts();
+      const pad=40; const W=canvas.width, H=canvas.height; ctx.clearRect(0,0,W,H);
+      const max=Math.max(1, ...counts.map(d=>d.value));
+      const barW = Math.max(22, Math.min(80, (W - pad*2) / Math.max(1, counts.length) - 16));
+      const gap = 16; 
+
+      // grid lines
+      ctx.strokeStyle='rgba(255,255,255,.12)';
+      ctx.lineWidth=1;
+      const rows=4;
+      for(let i=0;i<=rows;i++){
+        const y = pad + (H - pad*2) * (i/rows);
+        ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+      }
+
+      // Legend
+      const legend=document.getElementById('legend'); legend.innerHTML='';
+      counts.forEach((d,i)=>{
+        const hue=(i*60)%360; const color=`hsl(${hue} 85% 60%)`;
+        const el=document.createElement('span'); el.innerHTML=`<span class="legend-dot" style="background:${color}"></span>${d.label}`;
+        legend.appendChild(el);
+      });
+
+      let t=animate?0:1; const dur=600; let start=0;
+      function frame(ts){
+        if(!start) start=ts;
+        t = animate? Math.min(1, (ts-start)/dur) : 1;
+        // redraw bars each frame
+        ctx.clearRect(pad, pad, W-pad*2, H-pad*2);
+        // redraw grid (after clear)
+        ctx.strokeStyle='rgba(255,255,255,.12)';
+        for(let i=0;i<=rows;i++){
+          const y = pad + (H - pad*2) * (i/rows);
+          ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+        }
+        let x=pad;
+        counts.forEach((d,i)=>{
+          const hue=(i*60)%360; 
+          const grad=ctx.createLinearGradient(0, pad, 0, H-pad);
+          grad.addColorStop(0, `hsla(${hue},85%,70%,.95)`);
+          grad.addColorStop(1, `hsla(${hue},85%,50%,.75)`);
+          const h = (H - pad*2) * (d.value / max) * t;
+          ctx.fillStyle=grad; 
+          ctx.shadowColor=`hsla(${hue},85%,70%,.35)`; ctx.shadowBlur=18; ctx.shadowOffsetY=2;
+          ctx.fillRect(x, H-pad-h, barW, h);
+          ctx.shadowBlur=0;
+          ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='12px Montserrat'; ctx.textAlign='center';
+          if (d.value>0) ctx.fillText(String(d.value), x+barW/2, H-pad-h-6);
+          ctx.save(); ctx.translate(x+barW/2, H-pad+14); ctx.rotate(-Math.PI/8);
+          ctx.fillStyle='rgba(255,255,255,.8)'; ctx.fillText(d.label, 0, 0); ctx.restore();
+          x += barW + gap;
+        });
+        if(t<1 && animate) requestAnimationFrame(frame);
+      }
+      frame(performance.now());
+    }
+    drawChart(true);
+    document.getElementById('refreshChart').addEventListener('click', ()=>{ render(); drawChart(true); });
+  </script>
+</body></html>

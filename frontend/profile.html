@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cosmic DevSpace • Profile</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head><body class="profile-page">
+  <header class="site-header">
+    <div class="logo">🚀 Cosmic DevSpace</div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="projects.html">Projects</a>
+      <a href="blog.html">Blog</a>
+      <a href="guestbook.html">Guestbook</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="contact.html">Contact</a>
+      <span class="auth-links">
+        <a href="login.html" id="loginLink">Sign In</a>
+        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
+        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
+      </span>
+    </nav>
+  </header>
+  <main class="container">
+    <h1 class="page-title">👤 Your Profile</h1>
+    <section class="profile-card">
+      <div class="avatar" id="avatar">U</div>
+      <h2 id="pName">—</h2>
+      <p class="muted"><span id="pEmail">—</span></p>
+      <div class="actions">
+        <button class="btn-chip" id="editBtn">Edit</button>
+        <button class="btn-chip" id="logoutChip">Logout</button>
+      </div>
+      <p class="muted" style="margin-top:10px">Data is stored locally in your browser.</p>
+    </section>
+  </main>
+  <footer class="site-footer">© <span id="year"></span> Cosmic DevSpace</footer>
+  <script src="./js/app.js"></script>
+  <script>
+    const user = Auth.get();
+    if(!user){ location.replace('login.html'); }
+    else {
+      const name = user.name || 'User';
+      document.getElementById('pName').textContent = name;
+      document.getElementById('pEmail').textContent = user.email || '';
+      document.getElementById('avatar').textContent = name.trim().charAt(0).toUpperCase();
+    }
+    document.getElementById('logoutChip').onclick = () => { Auth.clear(); location.href = 'index.html'; };
+    document.getElementById('editBtn').onclick = () => alert('Demo only: editing disabled in static mode.');
+  </script>
+</body></html>

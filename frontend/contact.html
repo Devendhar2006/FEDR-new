@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cosmic DevSpace • Contact</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head><body class="contact-page">
+  <header class="site-header">
+    <div class="logo">🚀 Cosmic DevSpace</div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="projects.html">Projects</a>
+      <a href="blog.html">Blog</a>
+      <a href="guestbook.html">Guestbook</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="contact.html" class="active">Contact</a>
+      <span class="auth-links">
+        <a href="login.html" id="loginLink">Sign In</a>
+        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
+        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
+      </span>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1 class="page-title">📮 Contact</h1>
+    <section class="contact-card">
+      <form id="contactForm" class="form">
+        <div class="row two-col">
+          <div class="field">
+            <label for="cName">Your Name</label>
+            <input type="text" id="cName" placeholder="Jane Doe" required />
+          </div>
+          <div class="field">
+            <label for="cEmail">Email</label>
+            <input type="email" id="cEmail" placeholder="you@example.com" required />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field" style="width:100%">
+            <label for="cSubject">Subject</label>
+            <input type="text" id="cSubject" placeholder="Let's chat" required />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field" style="width:100%">
+            <label for="cMsg">Message</label>
+            <textarea id="cMsg" placeholder="Your message…" rows="5" required></textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn-gradient" type="submit">Send</button>
+        </div>
+        <p class="muted" style="margin:.5rem 0 0 0">Demo only — shows a success toast locally.</p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">© <span id="year"></span> Cosmic DevSpace</footer>
+  <script src="./js/app.js"></script>
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      alert('Thanks! Message queued locally.');
+      e.target.reset();
+    });
+  </script>
+</body></html>

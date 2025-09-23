@@ -1,0 +1,229 @@
+{
+  "name": "cosmic-devspace",
+  "version": "1.0.0",
+  "description": "A cosmic-themed full-stack developer portfolio with real-time features and immersive space UI",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "dev:debug": "nodemon --inspect backend/server.js",
+    "test": "node scripts/test-runner.js",
+    "test:unit": "jest --testPathPattern=tests/unit --coverage",
+    "test:integration": "jest --testPathPattern=tests/integration --coverage",
+    "test:e2e": "jest --testPathPattern=tests/e2e --coverage --testTimeout=30000",
+    "test:performance": "jest --testPathPattern=tests/performance --coverage",
+    "test:security": "jest --testPathPattern=tests/performance/performance-security.test.js --coverage",
+    "test:coverage": "jest --coverage --collectCoverageFrom='**/*.js' --coverageDirectory=coverage",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "npm run lint && npm run test",
+    "clean": "rimraf logs/* uploads/* node_modules/.cache",
+    "seed": "node scripts/seed-database.js",
+    "migrate": "node scripts/migrate-database.js",
+    "backup": "node scripts/backup-database.js",
+    "restore": "node scripts/restore-database.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop cosmic-devspace",
+    "pm2:restart": "pm2 restart cosmic-devspace",
+    "pm2:delete": "pm2 delete cosmic-devspace",
+    "pm2:logs": "pm2 logs cosmic-devspace",
+    "pm2:monitor": "pm2 monit",
+    "docker:build": "docker build -t cosmic-devspace .",
+    "docker:run": "docker run -p 3000:3000 cosmic-devspace",
+    "docker:compose:dev": "docker-compose --profile development up",
+    "docker:compose:prod": "docker-compose --profile production up -d",
+    "docker:compose:down": "docker-compose down",
+    "docker:compose:logs": "docker-compose logs -f cosmic-app",
+    "health": "node healthcheck.js",
+    "precommit": "npm run lint && npm run format:check && npm run test",
+    "prepare": "husky install",
+    "postinstall": "npm run setup:dirs",
+    "setup:dirs": "mkdir -p logs uploads",
+    "security:audit": "npm audit",
+    "security:fix": "npm audit fix",
+    "deps:check": "ncu",
+    "deps:update": "ncu -u && npm install",
+    "analyze": "node scripts/analyze-bundle.js",
+    "docs": "jsdoc -c jsdoc.config.json",
+    "cert:generate": "node scripts/generate-ssl.js",
+    "deploy:heroku": "git push heroku main",
+    "deploy:railway": "railway up",
+    "logs:view": "tail -f logs/cosmic-devspace.log",
+    "logs:error": "tail -f logs/cosmic-error.log",
+    "stats": "node scripts/app-stats.js"
+  },
+  "keywords": [
+    "portfolio",
+    "cosmic",
+    "space",
+    "fullstack",
+    "nodejs",
+    "express",
+    "mongodb",
+    "realtime",
+    "socketio",
+    "javascript",
+    "developer",
+    "showcase"
+  ],
+  "author": {
+    "name": "Cosmic Developer",
+    "email": "hello@cosmicdevspace.com",
+    "url": "https://cosmicdevspace.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/cosmic-devspace.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/cosmic-devspace/issues"
+  },
+  "homepage": "https://cosmicdevspace.com",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "socket.io": "^4.7.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.8.1",
+    "express-validator": "^7.0.1",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.4",
+    "dotenv": "^16.3.1",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0",
+    "winston": "^3.10.0",
+    "express-session": "^1.17.3",
+    "connect-mongo": "^5.0.0",
+    "express-mongo-sanitize": "^2.2.0",
+    "hpp": "^0.2.3",
+    "xss": "^1.0.14"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.6.2",
+    "supertest": "^6.3.3",
+    "selenium-webdriver": "^4.11.1",
+    "chromedriver": "^115.0.1",
+    "eslint": "^8.46.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.28.0",
+    "eslint-plugin-security": "^1.7.1",
+    "prettier": "^3.0.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
+    "rimraf": "^5.0.1",
+    "npm-check-updates": "^16.10.18",
+    "jsdoc": "^4.0.2",
+    "@types/node": "^20.4.9",
+    "mongodb-memory-server": "^8.14.0",
+    "chalk": "^4.1.2",
+    "cross-env": "^7.0.3"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!**/node_modules/**",
+      "!**/coverage/**",
+      "!**/logs/**",
+      "!**/uploads/**",
+      "!jest.config.js",
+      "!ecosystem.config.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ]
+  },
+  "nodemonConfig": {
+    "watch": [
+      "server.js",
+      "routes/",
+      "models/",
+      "middleware/",
+      "config/",
+      "utils/"
+    ],
+    "ext": "js,json",
+    "ignore": [
+      "node_modules/",
+      "logs/",
+      "uploads/",
+      "tests/",
+      "frontend/"
+    ],
+    "env": {
+      "NODE_ENV": "development"
+    }
+  },
+  "eslintConfig": {
+    "extends": [
+      "airbnb-base",
+      "plugin:security/recommended"
+    ],
+    "rules": {
+      "no-console": "warn",
+      "consistent-return": "off",
+      "func-names": "off",
+      "object-shorthand": "off",
+      "no-process-exit": "off",
+      "no-param-reassign": "off",
+      "no-return-await": "off",
+      "no-underscore-dangle": "off",
+      "class-methods-use-this": "off",
+      "prefer-destructuring": [
+        "error",
+        {
+          "object": true,
+          "array": false
+        }
+      ]
+    },
+    "env": {
+      "node": true,
+      "es6": true,
+      "jest": true
+    }
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/yourusername"
+  }
+}

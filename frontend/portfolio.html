@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cosmic DevSpace • Portfolio</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+ </head>
+ <body class="portfolio-page">
+  <header class="site-header">
+    <div class="logo">🚀 Cosmic DevSpace</div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="portfolio.html" class="active">Portfolio</a>
+      <a href="projects.html">Projects</a>
+      <a href="blog.html">Blog</a>
+      <a href="guestbook.html">Guestbook</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="contact.html">Contact</a>
+      <span class="auth-links">
+        <a href="login.html" id="loginLink">Sign In</a>
+        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
+        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
+      </span>
+    </nav>
+  </header>
+
+  <main class="container blog-container" role="main" aria-label="Portfolio section">
+    <h1 class="page-title">✨ Portfolio</h1>
+    <p class="muted" aria-label="Page description">Featured work from the Cosmic collection.</p>
+    <div class="grid-cards" role="list">
+      <div class="tile" role="listitem" tabindex="0" aria-label="Project: Cosmic E-commerce - Space-themed store with clean UI">
+        <h3>Cosmic E‑commerce</h3>
+        <p>Space‑themed store with clean UI.</p>
+      </div>
+      <div class="tile" role="listitem" tabindex="0" aria-label="Project: Stellar Landing - Animated hero with parallax stars">
+        <h3>Stellar Landing</h3>
+        <p>Animated hero with parallax stars.</p>
+      </div>
+      <div class="tile" role="listitem" tabindex="0" aria-label="Project: Nebula Docs - Elegant docs site with search">
+        <h3>Nebula Docs</h3>
+        <p>Elegant docs site with search.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    &copy; <span id="year"></span> Cosmic DevSpace
+  </footer>
+
+  <script src="./js/app.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

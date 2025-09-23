@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cosmic DevSpace • Guestbook</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head><body>
+  <header class="site-header">
+    <div class="logo">🚀 Cosmic DevSpace</div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="projects.html">Projects</a>
+      <a href="blog.html">Blog</a>
+      <a href="guestbook.html" class="active">Guestbook</a>
+      <a href="analytics.html">Analytics</a>
+      <a href="contact.html">Contact</a>
+      <span class="auth-links">
+        <a href="login.html" id="loginLink">Sign In</a>
+        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
+        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
+      </span>
+    </nav>
+  </header>
+
+  <main class="container guestbook-page">
+    <h1 class="page-title">📖 Guestbook</h1>
+    <form id="guestbookForm" class="form-inline" autocomplete="on">
+      <div class="grid">
+        <div class="field">
+          <label for="gbName">Name</label>
+          <input type="text" id="gbName" placeholder="Your name" required />
+        </div>
+        <div class="field">
+          <label for="gbMsg">Message <span id="gbCount" class="muted" style="font-weight:400">0/240</span></label>
+          <textarea id="gbMsg" maxlength="240" placeholder="Say something nice… ✨" required></textarea>
+        </div>
+        <div class="field" style="align-self:end">
+          <label>&nbsp;</label>
+          <button class="btn-gradient" type="submit" title="Sign the guestbook">Sign</button>
+        </div>
+      </div>
+    </form>
+
+    <section id="guestbookEntries" style="margin-top:1rem; display:grid; gap:12px;" aria-live="polite"></section>
+  </main>
+
+  <footer class="site-footer">© <span id="year"></span> Cosmic DevSpace</footer>
+  <script src="./js/app.js"></script>
+  <script>
+    const key = 'guestbookEntries';
+    const list = document.getElementById('guestbookEntries');
+    const form = document.getElementById('guestbookForm');
+    const nameEl = document.getElementById('gbName');
+    const msgEl = document.getElementById('gbMsg');
+    const countEl = document.getElementById('gbCount');
+
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+    }
+
+    function updateCount(){
+      const v = msgEl.value || '';
+      countEl.textContent = `${v.length}/240`;
+    }
+    msgEl.addEventListener('input', updateCount);
+
+    function render(){
+      list.innerHTML='';
+      const entries = JSON.parse(localStorage.getItem(key)||'[]');
+      if(!entries.length){ list.innerHTML='<p class="muted">No entries yet. Be the first!</p>'; return; }
+      entries.forEach((e)=>{
+        const card=document.createElement('div');
+        card.className='entry-card';
+        card.innerHTML = `<div class="name">${escapeHtml(e.name)}</div><p>${escapeHtml(e.msg)}</p><div class="time">${new Date(e.ts).toLocaleString()}</div>`;
+        list.appendChild(card);
+      });
+    }
+
+    form.addEventListener('submit',e=>{
+      e.preventDefault();
+      const name=(nameEl.value||'Anonymous').trim();
+      const msg=(msgEl.value||'').trim();
+      if(!msg) return;
+      const entries = JSON.parse(localStorage.getItem(key)||'[]');
+      entries.unshift({name,msg,ts:Date.now()});
+      localStorage.setItem(key, JSON.stringify(entries));
+      form.reset(); updateCount();
+      render();
+    });
+    updateCount();
+    render();
+  </script>
+</body></html>
