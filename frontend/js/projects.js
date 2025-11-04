@@ -58,29 +58,117 @@
     return `<div class="chip-row">${collabs.slice(0,5).map(c=>`<span class="chip">${c.name} • ${c.role}</span>`).join('')}</div>`;
   }
 
+  function updateStats(items) {
+    const total = items.length;
+    const active = items.filter(i => i.status === 'active' || !i.status).length;
+    const techs = new Set(items.flatMap(i => i.technologies || []).map(t => t.name || t));
+    const contributors = new Set(items.flatMap(i => i.teamMembers || []).map(m => m.userId));
+    
+    const totalEl = $('#totalProjects');
+    const activeEl = $('#activeProjects');
+    const contribEl = $('#totalContributors');
+    const techEl = $('#totalTechnologies');
+    
+    if (totalEl) totalEl.textContent = total;
+    if (activeEl) activeEl.textContent = active;
+    if (contribEl) contribEl.textContent = contributors.size || 0;
+    if (techEl) techEl.textContent = techs.size || 0;
+  }
+  
   function renderGrid(items){
-    const grid = $('#projectsGrid');
+    const grid = $('#projectsGallery');
+    if (!grid) return;
+    
     grid.innerHTML = '';
-    if (!items.length){ grid.innerHTML = '<p class="muted">No projects found.</p>'; return; }
+    
+    // Show/hide empty state
+    const emptyState = $('#emptyState');
+    if (emptyState) {
+      emptyState.classList.toggle('hidden', items.length > 0);
+    }
+    
+    if (!items.length) return;
     const signedIn = !!authUser();
-    items.forEach(p=>{
+    
+    // Filter to only show projects (itemType === 'project' or no itemType)
+    const projects = items.filter(p => !p.itemType || p.itemType === 'project');
+    
+    projects.forEach((p, index)=>{
       const el = document.createElement('div');
-      el.className = 'tile';
+      el.className = `project-card portfolio-card status-${p.status || 'active'}`;
       el.setAttribute('role','listitem');
       el.tabIndex = 0;
+      
+      // Add animation
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = `all 0.4s ease ${index * 0.05}s`;
+      
+      const statusIcon = {
+        'active': '🟢',
+        'completed': '🔵',
+        'archived': '⚪',
+        'onhold': '🟡',
+        'planning': '🟣'
+      }[p.status || 'active'] || '🟢';
+      
+      const imageUrl = p.images?.[0]?.url || p.thumbnail || p.image || 'https://via.placeholder.com/400x225/1a2238/965aff?text=' + encodeURIComponent(p.title);
+      const views = p.metrics?.views || p.views || 0;
+      const likes = p.metrics?.likes || p.likedBy?.length || p.stars || 0;
+      
       el.innerHTML = `
-        <h3>${p.title}</h3>
-        ${statusBadge(p.status)}
-        <p>${(p.shortDescription || p.description || '').slice(0,140)}</p>
-        ${techChips(p.technologies)}
-        ${tagChips(p.tags)}
+        <div class="card-image-wrapper">
+          <img class="card-image" src="${imageUrl}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/400x225/1a2238/965aff?text=${encodeURIComponent(p.title)}'">
+          <div class="image-overlay">
+            <button class="overlay-btn" onclick="event.stopPropagation(); if(typeof openItemDetail === 'function') openItemDetail('${p._id}'); else openDetails(p);">👁️ View Details</button>
+            ${p.links?.demo || p.links?.live ? `<a class="overlay-btn" href="${p.links?.demo || p.links?.live}" target="_blank" onclick="event.stopPropagation()">🌐 Live Demo</a>` : ''}
+            ${p.links?.github ? `<a class="overlay-btn" href="${p.links.github}" target="_blank" onclick="event.stopPropagation()">🔗 GitHub</a>` : ''}
+          </div>
+          <div class="status-badge ${p.status || 'active'}">${statusIcon} ${(p.status || 'active').toUpperCase()}</div>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">${p.title}</h3>
+          <p class="card-description">${(p.shortDescription || p.description || '').slice(0,120)}</p>
+          <div class="tech-badges">
+            ${(p.technologies || []).slice(0, 6).map(t => `<span class="tech-badge">${t.name || t}</span>`).join('')}
+            ${(p.technologies || []).length > 6 ? `<span class="tech-badge more">+${(p.technologies || []).length - 6} more</span>` : ''}
+          </div>
+          <div class="card-stats">
+            <div class="stat-item"><span>👁️</span> ${views}</div>
+            <div class="stat-item"><span>❤️</span> ${likes}</div>
+            <div class="stat-item"><span>🚀</span> ${statusIcon} ${p.status || 'Active'}</div>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn btn-view" onclick="event.stopPropagation(); if(typeof openItemDetail === 'function') openItemDetail('${p._id}'); else openDetails(p);">💬 View & Comment</button>
+            <button class="card-btn btn-star ${p.starred ? 'starred' : ''}" onclick="event.stopPropagation();">
+              ⭐ ${p.starred ? 'Starred' : 'Star'}
+            </button>
+          </div>
+        </div>
       `;
+      
+      // Animate in
+      setTimeout(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, 50 + index * 50);
+      
       // click opens details
-      el.addEventListener('click', ()=> openDetails(p));
+      el.addEventListener('click', ()=> {
+        if (typeof openItemDetail === 'function') {
+          openItemDetail(p._id);
+        } else {
+          openDetails(p);
+        }
+      });
+      
       // add edit/delete for signed in
       if (signedIn){ attachActions(el, p); }
       grid.appendChild(el);
     });
+    
+    // Update stats
+    updateStats(projects);
   }
 
   function attachActions(tile, p){
@@ -94,19 +182,95 @@
   }
 
   function openDetails(p){
-    $('#detailsTitle').textContent = p.title;
-    const imgs = (p.images||[]).slice(0,4).map(i=>`<img src="${i.url}" alt="${p.title}" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;"/>`).join('');
-    $('#detailsContent').innerHTML = `
-      ${statusBadge(p.status)}
-      <p style="margin-top:8px;">${p.description||''}</p>
-      ${imgs}
-      ${linkButtons(p.links)}
-      ${contributorList(p.collaborators)}
+    const modal = $('#detailModal');
+    if (!modal) return;
+    
+    $('#detailTitle').textContent = p.title;
+    
+    const statusIcon = {
+      'active': '🟢',
+      'completed': '🔵',
+      'archived': '⚪',
+      'onhold': '🟡',
+      'planning': '🟣'
+    }[p.status || 'active'] || '🟢';
+    
+    $('#detailContent').innerHTML = `
+      <div class="status-badge ${p.status || 'active'}" style="position:relative;top:0;right:0;margin-bottom:1rem;display:inline-flex;">
+        ${statusIcon} ${(p.status || 'active').toUpperCase()}
+      </div>
+      
+      <img class="detail-image" src="${p.image || 'https://via.placeholder.com/800x450/1a2238/965aff?text=Project'}" alt="${p.title}">
+      
+      <h2 class="detail-title">${p.title}</h2>
+      <p class="detail-description">${p.description || ''}</p>
+      
+      <div class="detail-stats">
+        <div class="detail-stat">
+          <span class="detail-stat-value">${p.views || 0}</span>
+          <span class="detail-stat-label">Views</span>
+        </div>
+        <div class="detail-stat">
+          <span class="detail-stat-value">${p.stars || 0}</span>
+          <span class="detail-stat-label">Stars</span>
+        </div>
+        <div class="detail-stat">
+          <span class="detail-stat-value">${p.forks || 0}</span>
+          <span class="detail-stat-label">Forks</span>
+        </div>
+        <div class="detail-stat">
+          <span class="detail-stat-value">${(p.teamMembers || []).length}</span>
+          <span class="detail-stat-label">Contributors</span>
+        </div>
+      </div>
+      
+      ${(p.technologies && p.technologies.length) ? `
+        <div class="detail-tech">
+          <h3>Technology Stack</h3>
+          <div class="tech-badges">
+            ${p.technologies.map(t => `<span class="tech-badge">${t.name || t}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+      
+      ${(p.teamMembers && p.teamMembers.length) ? `
+        <div class="detail-tech">
+          <h3>Team Members</h3>
+          <div class="team-members">
+            ${p.teamMembers.map(m => `<span class="team-avatar" data-name="${m.name || 'User'}">${(m.name || 'U')[0]}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+      
+      <div class="detail-links">
+        ${p.links?.demo ? `<a class="detail-link" href="${p.links.demo}" target="_blank">🔗 Live Demo</a>` : ''}
+        ${p.links?.github ? `<a class="detail-link" href="${p.links.github}" target="_blank">📂 GitHub</a>` : ''}
+        ${p.links?.docs ? `<a class="detail-link" href="${p.links.docs}" target="_blank">📋 Documentation</a>` : ''}
+      </div>
     `;
-    toggleModal('#detailsModal', true);
+    
+    modal.classList.remove('hidden');
   }
 
-  function toggleModal(sel, open){ const m=$(sel); if(!m) return; m.classList.toggle('hidden', !open); }
+  function toggleModal(sel, open){ 
+    const m=$(sel); 
+    if(!m) return; 
+    m.classList.toggle('hidden', !open);
+    // Lock body scroll when modal is open
+    if (open) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+  }
+  
+  function closeModal(modalId) {
+    const modal = $(modalId);
+    if (modal) {
+      modal.classList.add('hidden');
+      document.body.classList.remove('modal-open');
+    }
+  }
 
   // Upload/Edit modal wiring (reusing structure similar to portfolio page)
   const upState = { images: [], editingId: null };
@@ -146,19 +310,25 @@
     if (state.filters.category) params.category = state.filters.category;
     if (state.filters.status) params.status = state.filters.status;
     if (state.filters.search) params.search = state.filters.search;
+    // Show loading
+    const spinner = $('#loadingSpinner');
+    if (spinner) spinner.classList.remove('hidden');
+    
     try {
       const resp = await API.list(params);
       const items = resp?.data?.projects || [];
       state.items = items;
+      updateStats(items);
       renderGrid(items);
     } catch {
       // Offline/demo fallback: show a few sample projects without hitting API
       const samples = [
-        { title:'Galactic Web App', status:'completed', shortDescription:'Real‑time satellite tracker.', technologies:[{name:'Vanilla JS'},{name:'WebSocket'}], tags:['space','realtime'] },
-        { title:'AI Nebula', status:'in-progress', shortDescription:'Constellation classifier demo.', technologies:[{name:'TensorFlow.js'}], tags:['ai','ml'] },
-        { title:'Hyperdrive UI', status:'planning', shortDescription:'Component set with motion.', technologies:[{name:'CSS'},{name:'Animations'}], tags:['ui','design'] }
+        { title:'Galactic Web App', status:'active', shortDescription:'Real‑time satellite tracker.', technologies:[{name:'Vanilla JS'},{name:'WebSocket'}], tags:['space','realtime'], views: 450, stars: 12 },
+        { title:'AI Nebula', status:'completed', shortDescription:'Constellation classifier demo.', technologies:[{name:'TensorFlow.js'}], tags:['ai','ml'], views: 320, stars: 8 },
+        { title:'Hyperdrive UI', status:'planning', shortDescription:'Component set with motion.', technologies:[{name:'CSS'},{name:'Animations'}], tags:['ui','design'], views: 180, stars: 5 }
       ];
       state.items = samples;
+      updateStats(samples);
       renderGrid(samples);
     }
   }
@@ -166,19 +336,42 @@
   function init(){
     if (!document.body.classList.contains('projects-page')) return;
 
-    // Toolbar
-    $('#filterCategory')?.addEventListener('change', e=>{ state.filters.category=e.target.value; load(); });
-    $('#filterStatus')?.addEventListener('change', e=>{ state.filters.status=e.target.value; load(); });
-    $('#sortBy')?.addEventListener('change', e=>{ state.filters.sort=e.target.value; load(); });
+    // Toolbar - Updated IDs
+    $('#categoryFilter')?.addEventListener('change', e=>{ state.filters.category=e.target.value; load(); });
+    $('#statusFilter')?.addEventListener('change', e=>{ state.filters.status=e.target.value; load(); });
+    $('#sortSelect')?.addEventListener('change', e=>{ state.filters.sort=e.target.value; load(); });
     $('#searchInput')?.addEventListener('input', e=>{ state.filters.search=e.target.value.trim(); load(); });
+    
+    // View toggle
+    $$('.view-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        $$('.view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const view = btn.dataset.view;
+        const gallery = $('#projectsGallery');
+        if (gallery) {
+          gallery.classList.toggle('list-view', view === 'list');
+        }
+      });
+    });
 
     // Modals
     $('#addProjectBtn')?.addEventListener('click', ()=>{ if(!authUser()){ toast('Please sign in to add a project.'); return; } toggleModal('#projectModal', true); });
-    $('#closeProjectModal')?.addEventListener('click', ()=>toggleModal('#projectModal', false));
-    $('[data-close-modal]')?.addEventListener('click', ()=>{ toggleModal('#projectModal', false); toggleModal('#detailsModal', false); });
-    $('#cancelProject')?.addEventListener('click', ()=>toggleModal('#projectModal', false));
+    $('#closeProjectModal')?.addEventListener('click', ()=>closeModal('#projectModal'));
+    $('#closeDetailModal')?.addEventListener('click', ()=>closeModal('#detailModal'));
+    $('#cancelProject')?.addEventListener('click', ()=>closeModal('#projectModal'));
+    $('#createFirstProject')?.addEventListener('click', ()=>{ if(!authUser()){ toast('Please sign in'); return; } toggleModal('#projectModal', true); });
     $('#projectForm')?.addEventListener('submit', submitUpload);
-    $('#closeDetails')?.addEventListener('click', ()=>toggleModal('#detailsModal', false));
+    
+    // Close modal when clicking backdrop
+    $$('.modal-backdrop').forEach(backdrop => {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) {
+          closeModal('#projectModal');
+          closeModal('#detailModal');
+        }
+      });
+    });
 
     // Drag & drop
     const drop=$('#dropzone'); const file=$('#fileInput'); const choose=$('#chooseFiles');
@@ -189,6 +382,10 @@
 
     function renderPreviews(){ const grid=$('#previewGrid'); if(!grid) return; grid.innerHTML=''; upState.images.forEach((it,idx)=>{ const wrap=document.createElement('div'); wrap.className='preview-item'; const img=document.createElement('img'); img.src=it.url; const rm=document.createElement('button'); rm.type='button'; rm.className='remove'; rm.textContent='×'; rm.onclick=()=>{ URL.revokeObjectURL(it.url); upState.images.splice(idx,1); renderPreviews(); }; wrap.append(img, rm); grid.appendChild(wrap); }); }
 
+    // Hide loading after init
+    const spinner = $('#loadingSpinner');
+    if (spinner) spinner.classList.add('hidden');
+    
     load();
   }
 

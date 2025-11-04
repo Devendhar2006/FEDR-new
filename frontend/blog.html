@@ -1,53 +1,112 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cosmic DevSpace • Blog</title>
-  <link rel="stylesheet" href="./css/styles.css" />
-</head><body class="blog-page">
-  <header class="site-header">
-    <div class="logo">🚀 Cosmic DevSpace</div>
-    <nav class="nav">
-      <a href="index.html">Home</a>
-      <a href="portfolio.html">Portfolio</a>
-      <a href="projects.html">Projects</a>
-      <a href="blog.html" class="active">Blog</a>
-      <a href="guestbook.html">Guestbook</a>
-      <a href="analytics.html">Analytics</a>
-      <a href="contact.html">Contact</a>
-      <span class="auth-links">
-        <a href="login.html" id="loginLink">Sign In</a>
-        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
-        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
-      </span>
-    </nav>
-  </header>
-
-  <!-- Decorative sparkles (blog-only) -->
-  <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/2728/512.png" alt="" class="sparkle" style="top: 10%; left: 12%;" />
-  <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1fa90/512.png" alt="" class="sparkle" style="top: 80%; left: 84%;" />
-  <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1fa90/512.png" alt="" class="sparkle" style="top: 36%; left: 60%;" />
-
-  <main class="container blog-container" role="main">
-    <h1 class="page-title">📝 Cosmic Blog</h1>
-
-    <div class="page-intro">
-      <p class="muted">Stories, tips, and tutorials from the cosmos.</p>
-      <div class="page-actions">
-        <button id="newPostBtn" class="btn-gradient" aria-haspopup="dialog" aria-controls="editorModal">+ New Post</button>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 Blog - Cosmic DevSpace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/navbar.css">
+  <link rel="stylesheet" href="./css/blog.css">
+</head>
+<body class="blog-page">
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <a href="index.html">🚀 Cosmic DevSpace</a>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+      <li><a href="projects.html" class="nav-link">Projects</a></li>
+      <li><a href="blog.html" class="nav-link">Blog</a></li>
+      <li><a href="guestbook.html" class="nav-link">Guestbook</a></li>
+      <li><a href="analytics.html" class="nav-link">Analytics</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+    <div class="navbar-auth" id="authLoggedOut">
+      <a href="login.html" class="nav-link">Sign In</a>
+      <a href="register.html" class="btn-register">Register</a>
+    </div>
+    <div class="navbar-user" id="authLoggedIn" style="display: none;">
+      <span class="user-greeting">Hi, <span id="userName">User</span></span>
+      <div class="user-menu">
+        <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
+        <div class="dropdown-menu">
+          <a href="profile.html">👤 Profile</a>
+          <a href="admin.html" id="adminLink" style="display: none;">⚙️ Admin</a>
+          <a href="settings.html">⚙️ Settings</a>
+          <a href="#" id="logoutBtn">🚪 Logout</a>
+        </div>
       </div>
     </div>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
 
-    <section class="toolbar" aria-label="Blog Filters and Sorting">
-      <div class="toolbar-row">
-        <div class="filters">
-          <select id="filterCategory" aria-label="Filter by Category">
+  <!-- Floating Orbs Background -->
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+
+  <!-- Hero Section -->
+  <section class="blog-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">📚 Cosmic Blog - Stories, Tips & Tutorials 📚</h1>
+      <p class="hero-subtitle">From the cosmos of knowledge and creativity</p>
+      
+      <!-- Stats Badges -->
+      <div class="stats-container">
+        <div class="stat-badge">
+          <span class="stat-icon">📝</span>
+          <div class="stat-info">
+            <span class="stat-value" id="totalPosts">0</span>
+            <span class="stat-label">Total Posts</span>
+          </div>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-icon">👁️</span>
+          <div class="stat-info">
+            <span class="stat-value" id="totalViews">0</span>
+            <span class="stat-label">Total Views</span>
+          </div>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-icon">💬</span>
+          <div class="stat-info">
+            <span class="stat-value" id="totalComments">0</span>
+            <span class="stat-label">Total Comments</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container blog-container">
+    <!-- Filters & Controls -->
+    <div class="controls-section">
+      <div class="controls-row">
+        <!-- Category Filter -->
+        <div class="control-group">
+          <label for="categoryFilter">Category</label>
+          <select id="categoryFilter" class="filter-select">
             <option value="">All Categories</option>
-            <option>announcement</option>
-            <option>tutorial</option>
-            <option>design</option>
-            <option>dev</option>
-            <option>news</option>
+            <option value="webdev">Web Dev</option>
+            <option value="mobiledev">Mobile Dev</option>
+            <option value="aiml">AI/ML</option>
+            <option value="design">Design</option>
+            <option value="devops">DevOps</option>
+            <option value="blockchain">Blockchain</option>
+            <option value="tutorials">Tutorials</option>
+            <option value="opinion">Opinion</option>
+            <option value="other">Other</option>
           </select>
           <select id="sortBy" aria-label="Sort by">
             <option value="-date">Newest</option>
@@ -55,98 +114,211 @@
             <option value="-views">Most Viewed</option>
           </select>
         </div>
-        <div class="search">
-          <input id="searchInput" type="search" placeholder="Search posts..." aria-label="Search posts" />
+
+        <!-- Search Bar -->
+        <div class="control-group search-group">
+          <label for="searchInput">Search</label>
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search posts by title or content...">
+          <span class="search-count" id="searchCount"></span>
         </div>
-      </div>
-    </section>
 
-    <div id="blogGrid" class="grid-cards" role="list"></div>
+        <!-- Sort Dropdown -->
+        <div class="control-group">
+          <label for="sortSelect">Sort By</label>
+          <select id="sortSelect" class="filter-select">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="views">Most Viewed</option>
+            <option value="comments">Most Commented</option>
+            <option value="trending">Trending</option>
+          </select>
+        </div>
 
-    <!-- Details Modal -->
-    <div id="detailsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
-      <div class="modal-backdrop" data-close-modal></div>
-      <div class="modal-card">
-        <header class="modal-header">
-          <h2 id="detailsTitle">Post</h2>
-          <button class="icon-btn" id="closeDetails" aria-label="Close">✕</button>
-        </header>
-        <article id="detailsContent" class="post-content"></article>
-        <section class="share-row">
-          <button id="copyLinkBtn" class="btn-secondary">Copy Link</button>
-        </section>
-        <section id="commentsSection" class="comments">
-          <h3>Comments</h3>
-          <div id="commentsList"></div>
-          <form id="commentForm" class="form-inline" novalidate>
-            <div class="grid">
-              <div class="field" style="grid-column: 1 / -1;">
-                <label for="commentText">Your Comment</label>
-                <textarea id="commentText" rows="3" placeholder="Share your thoughts..."></textarea>
-              </div>
-              <button type="submit" class="btn-gradient">Post Comment</button>
-            </div>
-          </form>
-        </section>
+        <!-- Write Post Button -->
+        <button class="btn-gradient add-project-btn" id="writePostBtn">✍️ Write Post</button>
       </div>
     </div>
 
-    <!-- Editor Modal -->
-    <div id="editorModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
-      <div class="modal-backdrop" data-close-modal></div>
-      <div class="modal-card">
-        <header class="modal-header">
-          <h2 id="editorTitle">New Post</h2>
-          <button class="icon-btn" id="closeEditor" aria-label="Close">✕</button>
-        </header>
-        <form id="postForm" class="form-grid" novalidate>
-          <div class="field"><label for="postTitle">Title</label><input id="postTitle" required maxlength="120" /></div>
-          <div class="field two-col">
-            <div><label for="postCategory">Category</label>
-              <select id="postCategory">
-                <option>announcement</option>
-                <option>tutorial</option>
-                <option>design</option>
-                <option>dev</option>
-                <option>news</option>
-              </select>
-            </div>
-            <div><label for="postTags">Tags (comma‑separated)</label><input id="postTags" placeholder="e.g., cosmos, tips" /></div>
-          </div>
-          <div class="field">
-            <label>Cover Image</label>
-            <div class="dropzone" id="coverDrop">
-              <input id="coverInput" type="file" accept="image/*" hidden />
-              <div class="dz-instructions">Drag & drop cover here, or <button type="button" class="link-btn" id="chooseCover">browse</button></div>
-            </div>
-            <div id="coverPreview" class="preview-grid"></div>
-          </div>
-          <div class="field">
-            <label>Editor</label>
-            <div class="editor-toolbar">
-              <button type="button" data-cmd="bold"><b>B</b></button>
-              <button type="button" data-cmd="italic"><i>I</i></button>
-              <button type="button" data-cmd="formatBlock" data-val="h2">H2</button>
-              <button type="button" data-cmd="formatBlock" data-val="h3">H3</button>
-              <button type="button" id="insertLink">Link</button>
-              <button type="button" id="insertCode">Code</button>
-              <button type="button" id="insertImage">Image</button>
-              <button type="button" id="togglePreview" class="btn-secondary">Preview</button>
-            </div>
-            <div id="postEditor" class="editor" contenteditable="true" aria-multiline="true"></div>
-            <article id="postPreview" class="post-content" hidden></article>
-          </div>
-          <div class="actions">
-            <button type="button" id="cancelPost" class="btn-secondary">Cancel</button>
-            <button type="submit" class="btn-gradient">Publish</button>
-          </div>
-          <div id="editorMsg" class="form-message" aria-live="polite"></div>
-        </form>
+    <!-- Tag Filter Pills -->
+    <div class="tag-filter-section">
+      <label>Popular Tags:</label>
+      <div class="tag-pills" id="tagPills">
+        <!-- Tags will be dynamically inserted -->
+      </div>
+    </div>
+
+    <!-- Blog Posts Gallery -->
+    <div class="blog-gallery" id="blogGallery">
+      <!-- Cards will be dynamically inserted here -->
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state hidden" id="emptyState">
+      <div class="empty-icon">📖</div>
+      <h3>No Posts Yet</h3>
+      <p>Start sharing your knowledge with the world!</p>
+      <button class="btn-gradient" id="writeFirstPost">✍️ Write First Post</button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner hidden" id="loadingSpinner">
+      <div class="spinner"></div>
+      <p>Loading cosmic posts...</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination hidden" id="pagination">
+      <div class="pagination-info" id="paginationInfo">Showing 1-10 of 45 posts</div>
+      <div class="pagination-controls">
+        <button class="page-btn" id="prevPage" disabled>← Previous</button>
+        <div class="page-numbers" id="pageNumbers"></div>
+        <button class="page-btn" id="nextPage">Next →</button>
       </div>
     </div>
   </main>
 
-  <footer class="site-footer">© <span id="year"></span> Cosmic DevSpace</footer>
+  <!-- Full Blog Post View Modal -->
+  <div id="postDetailModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card modal-lg blog-post-detail">
+      <div class="post-header">
+        <button class="icon-btn back-btn" id="backToBlog">← Back to Blog</button>
+        <div class="share-buttons">
+          <button class="icon-btn" title="Share">📤</button>
+          <button class="icon-btn" id="copyPostLink" title="Copy Link">🔗</button>
+        </div>
+      </div>
+      
+      <div class="post-detail-content" id="postDetailContent">
+        <!-- Content will be dynamically inserted -->
+      </div>
+      
+      <!-- Comments Section -->
+      <div class="comments-section">
+        <h3 class="comments-title">💬 Comments (<span id="commentsCount">0</span>)</h3>
+        
+        <!-- Add Comment Form -->
+        <form id="commentForm" class="comment-form">
+          <textarea 
+            id="commentText" 
+            placeholder="Share your thoughts..." 
+            maxlength="500" 
+            rows="3"
+          ></textarea>
+          <div class="comment-form-footer">
+            <span class="char-counter"><span id="commentCharCount">0</span>/500</span>
+            <button type="submit" class="btn-gradient">Post Comment</button>
+          </div>
+        </form>
+        
+        <!-- Comments List -->
+        <div class="comments-list" id="commentsList">
+          <!-- Comments will be dynamically inserted -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Write/Edit Post Modal -->
+  <div id="editorModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h2 id="editorTitle">✍️ Write New Post</h2>
+        <button class="icon-btn" id="closeEditor">✕</button>
+      </div>
+      
+      <form id="postForm" class="form-grid" novalidate>
+        <div class="field">
+          <label for="postTitle">Post Title <span class="required">*</span></label>
+          <input id="postTitle" name="title" type="text" required maxlength="200" placeholder="Enter an engaging title...">
+          <span class="char-counter"><span id="titleCharCount">0</span>/200</span>
+        </div>
+        
+        <div class="field">
+          <label for="postCategory">Category <span class="required">*</span></label>
+          <select id="postCategory" name="category" required>
+            <option value="" disabled selected>Select a category</option>
+            <option value="webdev">Web Dev</option>
+            <option value="mobiledev">Mobile Dev</option>
+            <option value="aiml">AI/ML</option>
+            <option value="design">Design</option>
+            <option value="devops">DevOps</option>
+            <option value="blockchain">Blockchain</option>
+            <option value="tutorials">Tutorials</option>
+            <option value="opinion">Opinion</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="field">
+          <label>Featured Image <span class="required">*</span> <span class="field-hint">(Max 5MB)</span></label>
+          <div id="coverDrop" class="dropzone">
+            <input id="coverInput" type="file" accept="image/*" hidden>
+            <div class="dz-instructions">
+              <strong>📁 Drag & drop</strong> cover image here, or <button type="button" class="link-btn" id="chooseCover">browse</button>
+            </div>
+          </div>
+          <div id="coverPreview" class="preview-grid"></div>
+        </div>
+        
+        <div class="field">
+          <label for="postExcerpt">Excerpt <span class="required">*</span></label>
+          <textarea id="postExcerpt" name="excerpt" rows="2" required maxlength="300" placeholder="Brief summary that appears on cards..."></textarea>
+          <span class="char-counter"><span id="excerptCharCount">0</span>/300</span>
+        </div>
+        
+        <div class="field">
+          <label for="postContent">Content <span class="required">*</span></label>
+          <div class="editor-toolbar">
+            <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+            <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+            <button type="button" data-cmd="formatBlock" data-val="h2" title="Heading 2">H2</button>
+            <button type="button" data-cmd="formatBlock" data-val="h3" title="Heading 3">H3</button>
+            <button type="button" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
+            <button type="button" data-cmd="insertOrderedList" title="Numbered List">1. List</button>
+            <button type="button" id="insertLink" title="Insert Link">🔗 Link</button>
+            <button type="button" id="insertCode" title="Insert Code">💻 Code</button>
+            <button type="button" id="togglePreview" class="btn-secondary">👁️ Preview</button>
+          </div>
+          <div id="postEditor" class="editor" contenteditable="true" placeholder="Write your cosmic content here..."></div>
+          <article id="postPreview" class="post-content" hidden></article>
+        </div>
+        
+        <div class="field">
+          <label for="postTags">Tags <span class="field-hint">(Max 5, comma-separated)</span></label>
+          <input id="postTags" name="tags" type="text" placeholder="e.g., react, javascript, tutorial">
+          <div class="tech-pills" id="tagPillsDisplay"></div>
+        </div>
+        
+        <div class="field">
+          <label for="postStatus">Publishing Status</label>
+          <select id="postStatus" name="status">
+            <option value="published">Published (Live immediately)</option>
+            <option value="draft">Draft (Not public)</option>
+          </select>
+        </div>
+        
+        <div class="actions">
+          <button type="button" class="btn-secondary" id="cancelPost">Cancel</button>
+          <button type="button" class="btn-secondary" id="saveDraft">Save as Draft</button>
+          <button type="submit" class="btn-gradient">Publish Post</button>
+        </div>
+        
+        <div id="editorMsg" class="form-message"></div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    &copy; <span id="year"></span> Cosmic DevSpace. All rights reserved.
+  </footer>
+
   <script src="./js/app.js"></script>
   <script src="./js/blog.js"></script>
-</body></html>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+  <script src="./js/navbar.js"></script>
+</body>
+</html>

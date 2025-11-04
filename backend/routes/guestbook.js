@@ -23,7 +23,8 @@ router.get('/', validatePagination, async (req, res) => {
       page = 1, 
       limit = 20, 
       category, 
-      featured 
+      featured,
+      filter: filterType = 'all' // NEW: all, project-comments, general
     } = req.query;
     
     const skip = (page - 1) * limit;
@@ -33,9 +34,17 @@ router.get('/', validatePagination, async (req, res) => {
     if (category) filter.category = category;
     if (featured === 'true') filter.featured = true;
     
+    // NEW: Add project filter
+    if (filterType === 'project-comments') {
+      filter.projectId = { $ne: null };
+    } else if (filterType === 'general') {
+      filter.projectId = null;
+    }
+    
     const [messages, total] = await Promise.all([
       Guestbook.find(filter)
         .populate('user', 'username profile.avatar cosmicRank')
+        .populate('projectId', 'title') // NEW: Populate project info
         .sort({ featured: -1, createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit))
@@ -137,7 +146,15 @@ router.get('/categories', async (req, res) => {
 // @access  Public
 router.post('/', optionalAuth, validateGuestbookMessage, async (req, res) => {
   try {
-    const { name, email, message, category = 'general', contact } = req.body;
+    const { 
+      name, 
+      email, 
+      message, 
+      category = 'general', 
+      contact,
+      projectId = null, // NEW: Project linking
+      projectTitle = null // NEW: Project title
+    } = req.body;
     
     // Check for rate limiting (basic implementation)
     const recentMessages = await Guestbook.countDocuments({
@@ -159,6 +176,8 @@ router.post('/', optionalAuth, validateGuestbookMessage, async (req, res) => {
       message: message.trim(),
       category,
       contact,
+      projectId, // NEW
+      projectTitle, // NEW
       user: req.user?._id || null,
       ipAddress: req.ip,
       userAgent: req.get('User-Agent') || '',

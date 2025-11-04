@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Portfolio = require('../models/Portfolio');
+const ItemComment = require('../models/ItemComment');
 const Analytics = require('../models/Analytics');
 const { 
   authenticate, 
@@ -25,24 +26,49 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
     const { 
       page = 1, 
       limit = 12, 
-      sort = '-createdAt', 
+      sortParam = 'newest', 
       category, 
       featured, 
-      status = 'completed',
+      status, // Don't default to 'completed' - let all items show
       search 
     } = req.query;
     
-    // Build filter object
-    const filter = { visibility: 'public' };
+    // Map frontend sort values to MongoDB sort format
+    const sortMap = {
+      'newest': '-createdAt',
+      'oldest': 'createdAt',
+      'az': 'title',
+      'za': '-title',
+      'views': '-metrics.views',
+      'likes': '-metrics.likes',
+      'trending': '-metrics.views'
+    };
     
-    if (category) filter.category = category;
-    if (featured === 'true') filter.featured = true;
-    if (status) filter.status = status;
+    // Use sortParam if provided, otherwise use sort (for backward compatibility)
+    const sort = sortMap[req.query.sort || sortParam] || req.query.sort || '-createdAt';
+    
+    // Build filter object - include items with visibility 'public' or no visibility (for backward compatibility)
+    // TEMPORARILY: Show all items to debug - remove visibility filter
+    const filter = {};
+    
+    // For debugging: Show all items regardless of visibility
+    // TODO: Re-enable visibility filter after confirming items are saved
+    // filter.$or = [
+    //   { visibility: 'public' },
+    //   { visibility: { $exists: false } }
+    // ];
+    
+    // Additional filters
+    const additionalFilters = {};
+    if (category) additionalFilters.category = category;
+    if (featured === 'true') additionalFilters.featured = true;
+    // Only filter by status if explicitly provided - don't default filter
+    if (status && status !== 'all') additionalFilters.status = status;
     
     // Handle search
     if (search) {
       const searchRegex = new RegExp(search, 'i');
-      filter.$or = [
+      additionalFilters.$or = [
         { title: searchRegex },
         { description: searchRegex },
         { shortDescription: searchRegex },
@@ -51,7 +77,49 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
       ];
     }
     
+    // Combine filters
+    if (Object.keys(additionalFilters).length > 0) {
+      // Build andConditions array
+      const andConditions = [];
+      
+      // Add visibility filter if it exists
+      if (filter.$or && filter.$or.length > 0) {
+        andConditions.push({ $or: filter.$or });
+      }
+      
+      // Add non-$or filters
+      Object.entries(additionalFilters).forEach(([key, value]) => {
+        if (key !== '$or') {
+          andConditions.push({ [key]: value });
+        }
+      });
+      
+      // Handle search $or separately
+      if (additionalFilters.$or) {
+        andConditions.push({ $or: additionalFilters.$or });
+      }
+      
+      // Only use $and if we have conditions
+      if (andConditions.length > 0) {
+        filter.$and = andConditions;
+        if (filter.$or) delete filter.$or;
+      } else {
+        // Merge additionalFilters directly into filter
+        Object.assign(filter, additionalFilters);
+        if (filter.$or) delete filter.$or;
+      }
+    } else if (filter.$or && filter.$or.length > 0) {
+      // No additional filters, but we have visibility filter - keep it as is
+    } else {
+      // No filters at all - filter remains empty {} which means "get all"
+    }
+    
     const skip = (page - 1) * limit;
+    
+    // Debug: Log the filter being used
+    console.log('🔍 GET /api/portfolio - Filter:', JSON.stringify(filter, null, 2));
+    console.log('🔍 GET /api/portfolio - Sort:', sort);
+    console.log('🔍 GET /api/portfolio - Page:', page, 'Limit:', limit);
     
     // Get projects with pagination
     const [projects, total] = await Promise.all([
@@ -63,6 +131,33 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
         .lean(),
       Portfolio.countDocuments(filter)
     ]);
+    
+    // Debug: Log results
+    console.log(`📊 Found ${total} total items, returning ${projects.length} items`);
+    if (projects.length > 0) {
+      console.log('📋 First item sample:', {
+        _id: projects[0]._id,
+        title: projects[0].title,
+        itemType: projects[0].itemType,
+        visibility: projects[0].visibility,
+        category: projects[0].category
+      });
+    } else {
+      // Try to find ANY items without filters
+      const allItems = await Portfolio.countDocuments({});
+      console.log(`⚠️ No items found with filter. Total items in database: ${allItems}`);
+      if (allItems > 0) {
+        const sampleItem = await Portfolio.findOne({}).lean();
+        console.log('📋 Sample item from database:', {
+          _id: sampleItem._id,
+          title: sampleItem.title,
+          itemType: sampleItem.itemType,
+          visibility: sampleItem.visibility,
+          category: sampleItem.category,
+          status: sampleItem.status
+        });
+      }
+    }
     
     // Add user interaction data if authenticated
     if (req.user) {
@@ -221,46 +316,308 @@ router.get('/categories', async (req, res) => {
   }
 });
 
+// ============================================================================
+// COMMENT ROUTES (must come before /:id route)
+// ============================================================================
+
+// @route   GET /api/portfolio/:id/comments
+// @desc    Get all comments for a portfolio item
+// @access  Public
+router.get('/:id/comments', validateMongoId(), async (req, res) => {
+  try {
+    const { sort = '-createdAt', limit = 50, page = 1 } = req.query;
+    const skip = (page - 1) * limit;
+    
+    // Determine item type from the item itself
+    const item = await Portfolio.findById(req.params.id).select('itemType');
+    if (!item) {
+      return res.status(404).json({
+        error: 'Item Not Found',
+        message: '🌌 This cosmic item doesn\'t exist!'
+      });
+    }
+    
+    const itemType = item.itemType || 'project';
+    
+    const [comments, total] = await Promise.all([
+      ItemComment.getApproved(req.params.id, itemType, {
+        sort,
+        limit: parseInt(limit),
+        skip: parseInt(skip)
+      }).lean(),
+      ItemComment.countDocuments({
+        itemId: req.params.id,
+        itemType,
+        approved: true
+      })
+    ]);
+    
+    res.json({
+      success: true,
+      message: '💬 Comments retrieved successfully!',
+      data: {
+        comments,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / limit),
+          totalComments: total,
+          hasNext: page < Math.ceil(total / limit),
+          hasPrev: page > 1
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Comments fetch error:', error);
+    res.status(500).json({
+      error: 'Comments Fetch Failed',
+      message: '🛠️ Houston, we have a comments problem!'
+    });
+  }
+});
+
+// @route   POST /api/portfolio/:id/comments
+// @desc    Add a comment to a portfolio item
+// @access  Public (no auth required for comments)
+router.post('/:id/comments', validateMongoId(), async (req, res) => {
+  try {
+    const { name, email, text, emoji } = req.body;
+    
+    // Validation
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        error: 'Name Required',
+        message: '💬 Please provide your name!'
+      });
+    }
+    
+    if (!text || !text.trim()) {
+      return res.status(400).json({
+        error: 'Comment Required',
+        message: '💬 Please provide a comment!'
+      });
+    }
+    
+    if (text.trim().length > 500) {
+      return res.status(400).json({
+        error: 'Comment Too Long',
+        message: '💬 Comment cannot exceed 500 characters!'
+      });
+    }
+    
+    // Check if item exists
+    const item = await Portfolio.findById(req.params.id).select('itemType title');
+    if (!item) {
+      return res.status(404).json({
+        error: 'Item Not Found',
+        message: '🌌 This cosmic item doesn\'t exist!'
+      });
+    }
+    
+    const itemType = item.itemType || 'project';
+    
+    // Create comment
+    const comment = new ItemComment({
+      itemId: req.params.id,
+      itemType,
+      name: name.trim(),
+      email: email ? email.trim() : undefined,
+      text: text.trim(),
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+    
+    await comment.save();
+    
+    // Track analytics
+    if (req.user) {
+      Analytics.trackEvent({
+        eventType: 'item_comment',
+        eventName: 'Portfolio Item Commented',
+        user: req.user._id,
+        sessionId: req.sessionID || 'anonymous',
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        eventData: {
+          itemId: req.params.id,
+          itemType,
+          itemTitle: item.title
+        }
+      });
+    }
+    
+    res.status(201).json({
+      success: true,
+      message: '💬 Your comment has been posted!',
+      data: { comment }
+    });
+    
+  } catch (error) {
+    console.error('Comment creation error:', error);
+    res.status(500).json({
+      error: 'Comment Creation Failed',
+      message: '🛠️ Houston, we have a comment problem!',
+      details: error.message
+    });
+  }
+});
+
+// @route   POST /api/portfolio/:id/comments/:commentId/like
+// @desc    Toggle like on a comment
+// @access  Public
+router.post('/:id/comments/:commentId/like', validateMongoId(), async (req, res) => {
+  try {
+    const identifier = req.ip || req.headers['x-forwarded-for'] || 'anonymous';
+    
+    const comment = await ItemComment.findOne({
+      _id: req.params.commentId,
+      itemId: req.params.id,
+      approved: true
+    });
+    
+    if (!comment) {
+      return res.status(404).json({
+        error: 'Comment Not Found',
+        message: '💬 This comment doesn\'t exist!'
+      });
+    }
+    
+    const wasLiked = comment.likedBy.includes(identifier);
+    await comment.toggleLike(identifier);
+    
+    res.json({
+      success: true,
+      message: wasLiked ? '💔 Like removed!' : '❤️ Comment liked!',
+      data: {
+        liked: !wasLiked,
+        likesCount: comment.likes
+      }
+    });
+    
+  } catch (error) {
+    console.error('Like toggle error:', error);
+    res.status(500).json({
+      error: 'Like Toggle Failed',
+      message: '🛠️ Houston, we have a like problem!'
+    });
+  }
+});
+
+// @route   POST /api/portfolio/:id/comments/:commentId/reply
+// @desc    Add a reply to a comment
+// @access  Public
+router.post('/:id/comments/:commentId/reply', validateMongoId(), async (req, res) => {
+  try {
+    const { name, email, text } = req.body;
+    
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        error: 'Name Required',
+        message: '💬 Please provide your name!'
+      });
+    }
+    
+    if (!text || !text.trim()) {
+      return res.status(400).json({
+        error: 'Reply Required',
+        message: '💬 Please provide a reply!'
+      });
+    }
+    
+    if (text.trim().length > 500) {
+      return res.status(400).json({
+        error: 'Reply Too Long',
+        message: '💬 Reply cannot exceed 500 characters!'
+      });
+    }
+    
+    const comment = await ItemComment.findOne({
+      _id: req.params.commentId,
+      itemId: req.params.id,
+      approved: true
+    });
+    
+    if (!comment) {
+      return res.status(404).json({
+        error: 'Comment Not Found',
+        message: '💬 This comment doesn\'t exist!'
+      });
+    }
+    
+    await comment.addReply({
+      name: name.trim(),
+      email: email ? email.trim() : undefined,
+      text: text.trim()
+    });
+    
+    const newReply = comment.replies[comment.replies.length - 1];
+    
+    res.status(201).json({
+      success: true,
+      message: '💬 Your reply has been posted!',
+      data: { reply: newReply }
+    });
+    
+  } catch (error) {
+    console.error('Reply creation error:', error);
+    res.status(500).json({
+      error: 'Reply Creation Failed',
+      message: '🛠️ Houston, we have a reply problem!'
+    });
+  }
+});
+
 // @route   GET /api/portfolio/:id
-// @desc    Get single project by ID
+// @desc    Get single portfolio item (project/certification/achievement) with comments
 // @access  Public
 router.get('/:id', validateMongoId(), optionalAuth, async (req, res) => {
   try {
-    const project = await Portfolio.findById(req.params.id)
+    const { includeComments = 'true', commentsLimit = 10 } = req.query;
+    
+    const item = await Portfolio.findById(req.params.id)
       .populate('creator', 'username profile.avatar profile.fullName profile.bio')
-      .populate('comments.user', 'username profile.avatar')
       .lean();
     
-    if (!project) {
+    if (!item) {
       return res.status(404).json({
-        error: 'Project Not Found',
-        message: '🌌 This cosmic project doesn\'t exist in our universe!'
+        error: 'Item Not Found',
+        message: '🌌 This cosmic item doesn\'t exist in our universe!'
       });
     }
     
     // Check visibility
-    if (project.visibility === 'private' && 
-        (!req.user || project.creator._id.toString() !== req.user._id.toString())) {
+    if (item.visibility === 'private' && 
+        (!req.user || item.creator._id.toString() !== req.user._id.toString())) {
       return res.status(403).json({
         error: 'Access Denied',
-        message: '🚫 This cosmic project is private!'
+        message: '🚫 This cosmic item is private!'
       });
     }
     
     // Increment view count
     await Portfolio.findByIdAndUpdate(req.params.id, { $inc: { 'metrics.views': 1 } });
     
+    // Fetch comments if requested
+    let comments = [];
+    if (includeComments === 'true') {
+      const itemType = item.itemType || 'project';
+      comments = await ItemComment.getApproved(req.params.id, itemType, {
+        sort: '-createdAt',
+        limit: parseInt(commentsLimit)
+      }).lean();
+    }
+    
     // Add user interaction data if authenticated
     if (req.user) {
-      project.isLikedByUser = project.likedBy?.some(like => 
+      item.isLikedByUser = item.likedBy?.some(like => 
         like.user.toString() === req.user._id.toString()
       ) || false;
     }
     
     // Track analytics
     await Analytics.trackEvent({
-      eventType: 'project_view',
-      eventName: 'Project Detail View',
+      eventType: 'item_view',
+      eventName: 'Portfolio Item Detail View',
       user: req.user?._id || null,
       sessionId: req.sessionID || 'anonymous',
       ipAddress: req.ip,
@@ -270,34 +627,134 @@ router.get('/:id', validateMongoId(), optionalAuth, async (req, res) => {
         path: `/portfolio/${req.params.id}`
       },
       eventData: {
-        projectId: project._id,
-        projectTitle: project.title,
-        projectCategory: project.category,
-        projectCreator: project.creator.username
+        itemId: item._id,
+        itemType: item.itemType || 'project',
+        itemTitle: item.title
       }
     });
     
     res.json({
       success: true,
-      message: '🚀 Cosmic project retrieved successfully!',
-      data: { project }
+      message: '🚀 Cosmic item retrieved successfully!',
+      data: { 
+        item,
+        comments: comments || []
+      }
     });
     
   } catch (error) {
-    console.error('Project fetch error:', error);
+    console.error('Item fetch error:', error);
     res.status(500).json({
-      error: 'Project Fetch Failed',
-      message: '🛠️ Houston, we have a project problem!'
+      error: 'Item Fetch Failed',
+      message: '🛠️ Houston, we have an item problem!'
+    });
+  }
+});
+
+// @route   POST /api/portfolio/add
+// @desc    Add new portfolio item (project/certification/achievement)
+// @access  Private
+router.post('/add', authenticate, trackActivity, async (req, res) => {
+  try {
+    const { type = 'project', ...fields } = req.body;
+    
+    console.log('📝 POST /api/portfolio/add - Received request:', {
+      type,
+      title: fields.title || fields.certName || fields.achievementTitle,
+      userId: req.user._id
+    });
+    
+    // Validate type
+    if (!['project', 'certification', 'achievement'].includes(type)) {
+      return res.status(400).json({
+        error: 'Invalid Item Type',
+        message: 'Type must be project, certification, or achievement'
+      });
+    }
+    
+    // Build item data based on type
+    const itemData = {
+      itemType: type,
+      ...fields,
+      creator: req.user._id,
+      visibility: 'public' // ALWAYS set to public so items show up
+    };
+    
+    console.log('📦 Building item data:', {
+      itemType: itemData.itemType,
+      title: itemData.title,
+      visibility: itemData.visibility,
+      category: itemData.category
+    });
+    
+    // Set defaults based on type
+    if (type === 'project') {
+      itemData.status = itemData.status || 'completed';
+      itemData.category = itemData.category || 'other';
+    } else if (type === 'certification') {
+      itemData.category = itemData.category || 'certification';
+      itemData.status = itemData.status || 'completed';
+    } else if (type === 'achievement') {
+      itemData.category = itemData.category || 'achievement';
+      itemData.status = itemData.status || 'completed';
+    }
+    
+    const item = new Portfolio(itemData);
+    console.log('💾 Saving item to database...');
+    await item.save();
+    console.log('✅ Item saved successfully! ID:', item._id);
+    
+    // Update user stats based on type
+    if (type === 'project') {
+      req.user.stats.projectsCreated += 1;
+    } else if (type === 'certification') {
+      req.user.stats.certificationsEarned = (req.user.stats.certificationsEarned || 0) + 1;
+    } else if (type === 'achievement') {
+      req.user.stats.achievementsEarned = (req.user.stats.achievementsEarned || 0) + 1;
+    }
+    await req.user.save();
+    
+    // Populate creator info
+    await item.populate('creator', 'username profile.avatar');
+    
+    console.log('📊 Saved item details:', {
+      _id: item._id,
+      title: item.title,
+      itemType: item.itemType,
+      visibility: item.visibility,
+      category: item.category,
+      status: item.status
+    });
+    
+    const typeMessages = {
+      project: '🚀 Your cosmic project has been launched successfully!',
+      certification: '🎓 Your certification has been added successfully!',
+      achievement: '🏆 Your achievement has been added successfully!'
+    };
+    
+    res.status(201).json({
+      success: true,
+      message: typeMessages[type] || 'Item added successfully!',
+      data: { item: item }
+    });
+    
+  } catch (error) {
+    console.error('Portfolio item creation error:', error);
+    res.status(500).json({
+      error: 'Item Creation Failed',
+      message: '🛠️ Houston, we have a creation problem!',
+      details: error.message
     });
   }
 });
 
 // @route   POST /api/portfolio
-// @desc    Create new portfolio project
+// @desc    Create new portfolio project (backward compatibility)
 // @access  Private
 router.post('/', authenticate, validatePortfolioCreate, trackActivity, async (req, res) => {
   try {
     const projectData = {
+      itemType: 'project',
       ...req.body,
       creator: req.user._id
     };

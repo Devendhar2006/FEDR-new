@@ -8,14 +8,19 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const http = require('http');
 const socketIo = require('socket.io');
+const session = require('express-session');
+const passport = require('./config/passport');
 require('dotenv').config();
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const googleAuthRoutes = require('./routes/google-auth');
 const portfolioRoutes = require('./routes/portfolio');
 const guestbookRoutes = require('./routes/guestbook');
 const analyticsRoutes = require('./routes/analytics');
 const userRoutes = require('./routes/users');
+const blogRoutes = require('./routes/blog');
+const contactRoutes = require('./routes/contact');
 
 // Create Express app
 const app = express();
@@ -29,14 +34,17 @@ const io = socketIo(server, {
   }
 });
 
-// Rate limiting
+// Rate limiting - More permissive in development
+const isDevelopment = (process.env.NODE_ENV || 'development') === 'development';
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: isDevelopment ? 1 * 60 * 1000 : 15 * 60 * 1000, // 1 min in dev, 15 min in prod
+  max: isDevelopment ? 1000 : 100, // 1000 requests in dev, 100 in prod
   message: {
     error: 'Too many requests from this IP, please try again later.',
     type: 'rate_limit_exceeded'
-  }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Middleware
@@ -89,21 +97,39 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Session configuration (required for Passport)
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'cosmic-session-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Serve static frontend
 const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND_DIR));
 
 // Database connection
+mongoose.set('strictQuery', true);
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/cosmic-devspace', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000, // fail fast if DB not reachable
+  socketTimeoutMS: 45000
 })
 .then(() => {
   console.log('🚀 Connected to MongoDB - Database is in orbit!');
 })
 .catch((error) => {
-  console.error('❌ MongoDB connection error:', error);
-  process.exit(1);
+  console.error('❌ MongoDB connection error (continuing to serve frontend):', error);
+  // Do not exit the process; allow static frontend and non-DB endpoints to serve
 });
 
 // Health check endpoint
@@ -117,19 +143,58 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
+// Log database connection status for debugging
+app.use('/api', (req, res, next) => {
+  const readyState = mongoose.connection.readyState;
+  const stateNames = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  
+  // Log connection state on each request (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`📡 DB State: ${stateNames[readyState]} | Request: ${req.method} ${req.path}`);
+  }
+  
+  // Allow health check and OAuth endpoints regardless of DB state
+  const allowedPaths = ['/health', '/auth/google/status', '/auth/google', '/auth/google/callback'];
+  const isAllowed = allowedPaths.some(path => req.path.includes(path));
+  
+  // Only block if disconnected (0) or disconnecting (3), and not an allowed path
+  if ((readyState === 0 || readyState === 3) && !isAllowed) {
+    console.error(`❌ Request blocked - DB ${stateNames[readyState]}: ${req.method} ${req.path}`);
+    return res.status(503).json({
+      error: 'Service Unavailable',
+      message: '🛰️ Database link lost. Please try again in a moment.',
+    });
+  }
+  
+  next();
+});
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/guestbook', guestbookRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/blog', blogRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Root route serves frontend
 app.get(['/', '/index.html'], (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
 });
 
-// SPA fallback for non-API routes
+// Serve specific HTML files if they exist, otherwise fallback to index.html for SPA
 app.get(/^\/(?!api).*/, (req, res) => {
+  const requestedPath = req.path;
+  
+  // If it's a request for a specific HTML file, try to serve it
+  if (requestedPath.endsWith('.html')) {
+    const filePath = path.join(FRONTEND_DIR, requestedPath);
+    if (require('fs').existsSync(filePath)) {
+      return res.sendFile(filePath);
+    }
+  }
+  
+  // For all other routes (including paths without .html), serve index.html for SPA routing
   res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
 });
 
@@ -212,14 +277,16 @@ process.on('SIGTERM', () => {
 });
 
 const PORT = Number(process.env.PORT) || 5000;
-const HOST = process.env.HOST || '127.0.0.1';
 
-server.listen(PORT, HOST, () => {
+// Bind to all interfaces to avoid Windows localhost binding issues
+server.listen(PORT, () => {
+  const addressInfo = server.address();
+  const hostShown = typeof addressInfo === 'object' && addressInfo ? addressInfo.address : '127.0.0.1';
   console.log(`
   🚀 Cosmic DevSpace Backend launched successfully!
   
   🌟 Server Status: OPERATIONAL
-  🛰️  Address: http://${HOST}:${PORT}
+  🛰️  Address: http://${hostShown}:${PORT}
   🌍 Environment: ${process.env.NODE_ENV || 'development'}
   📡 Socket.IO: ACTIVE
   🗄️  Database: ${mongoose.connection.readyState === 1 ? 'CONNECTED' : 'CONNECTING'}

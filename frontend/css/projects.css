@@ -1,0 +1,530 @@
+/* ==========================================================================
+   COSMIC DEVSPACE - PROJECTS PAGE
+   Status-tracked projects with team collaboration
+   ========================================================================== */
+
+/* Import portfolio base styles (orbs, hero, controls, etc.) */
+@import './portfolio.css';
+
+/* ==========================================================================
+   PROJECT-SPECIFIC OVERRIDES & ADDITIONS
+   ========================================================================== */
+
+/* Projects Page Title */
+.projects-hero .hero-title {
+  background: linear-gradient(135deg, #fde68a 0%, #2bc4fa 50%, #965aff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ==========================================================================
+   STATUS BADGE COLORS
+   ========================================================================== */
+
+.status-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Active - Green */
+.status-active,
+.status-badge.active {
+  background: linear-gradient(135deg, #00d4aa, #00ff88);
+  color: #0a0e1a;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+/* Completed - Blue */
+.status-completed,
+.status-badge.completed {
+  background: linear-gradient(135deg, #2bc4fa, #4a9eff);
+  color: #0a0e1a;
+}
+
+/* Archived - Gray */
+.status-archived,
+.status-badge.archived {
+  background: linear-gradient(135deg, #6b7280, #9ca3af);
+  color: #ffffff;
+}
+
+/* On Hold - Yellow/Orange */
+.status-onhold,
+.status-badge.onhold {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #0a0e1a;
+}
+
+/* Planning - Purple */
+.status-planning,
+.status-badge.planning {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  color: #ffffff;
+}
+
+@keyframes statusPulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(0, 212, 170, 0.6);
+  }
+}
+
+/* ==========================================================================
+   PROJECT CARD ENHANCEMENTS
+   ========================================================================== */
+
+.project-card {
+  position: relative;
+}
+
+/* Status-based border colors */
+.project-card.status-active {
+  border-color: rgba(0, 212, 170, 0.5);
+}
+
+.project-card.status-completed {
+  border-color: rgba(43, 196, 250, 0.5);
+}
+
+.project-card.status-archived {
+  border-color: rgba(156, 163, 175, 0.3);
+  opacity: 0.8;
+}
+
+.project-card.status-onhold {
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.project-card.status-planning {
+  border-color: rgba(167, 139, 250, 0.5);
+}
+
+/* Hover effect enhances status color */
+.project-card.status-active:hover {
+  box-shadow: 0 16px 48px rgba(0, 212, 170, 0.4), 0 0 40px rgba(0, 255, 136, 0.3);
+}
+
+.project-card.status-completed:hover {
+  box-shadow: 0 16px 48px rgba(43, 196, 250, 0.4), 0 0 40px rgba(74, 158, 255, 0.3);
+}
+
+.project-card.status-onhold:hover {
+  box-shadow: 0 16px 48px rgba(251, 191, 36, 0.4), 0 0 40px rgba(245, 158, 11, 0.3);
+}
+
+/* ==========================================================================
+   TEAM MEMBERS / CONTRIBUTORS
+   ========================================================================== */
+
+.team-members {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.team-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.team-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.team-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-secondary);
+  background: linear-gradient(135deg, #965aff, #2bc4fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  margin-left: -8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.team-avatar:first-child {
+  margin-left: 0;
+}
+
+.team-avatar:hover {
+  transform: translateY(-3px) scale(1.1);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(150, 90, 255, 0.5);
+}
+
+.team-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Tooltip for team member names */
+.team-avatar::after {
+  content: attr(data-name);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  padding: 0.5rem 0.75rem;
+  background: rgba(10, 14, 26, 0.95);
+  border: 1px solid rgba(150, 90, 255, 0.4);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 20;
+}
+
+.team-avatar:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.team-more {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(150, 90, 255, 0.4);
+  background: rgba(150, 90, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #965aff;
+  margin-left: -8px;
+}
+
+/* ==========================================================================
+   PROJECT STATS WITH ICONS
+   ========================================================================== */
+
+.project-stats {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.project-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.project-stat .icon {
+  filter: drop-shadow(0 0 5px rgba(253, 230, 138, 0.5));
+}
+
+.project-stat.stars {
+  color: #fbbf24;
+}
+
+.project-stat.forks {
+  color: #2bc4fa;
+}
+
+/* ==========================================================================
+   DIFFICULTY BADGE
+   ========================================================================== */
+
+.difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.difficulty-beginner {
+  background: rgba(0, 212, 170, 0.2);
+  border: 1px solid rgba(0, 212, 170, 0.4);
+  color: #00d4aa;
+}
+
+.difficulty-intermediate {
+  background: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+}
+
+.difficulty-advanced {
+  background: rgba(255, 88, 143, 0.2);
+  border: 1px solid rgba(255, 88, 143, 0.4);
+  color: #ff568f;
+}
+
+/* ==========================================================================
+   PROJECT TIMELINE
+   ========================================================================== */
+
+.project-timeline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(150, 90, 255, 0.1);
+  border-radius: 12px;
+}
+
+.timeline-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  position: relative;
+}
+
+.timeline-item::after {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(150, 90, 255, 0.3));
+  z-index: -1;
+}
+
+.timeline-item:last-child::after {
+  display: none;
+}
+
+.timeline-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(150, 90, 255, 0.2);
+  border: 2px solid rgba(150, 90, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.timeline-item.active .timeline-icon {
+  background: linear-gradient(135deg, #965aff, #2bc4fa);
+  border-color: transparent;
+  box-shadow: 0 0 20px rgba(150, 90, 255, 0.5);
+  animation: timelinePulse 2s ease-in-out infinite;
+}
+
+@keyframes timelinePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.timeline-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ==========================================================================
+   RELATED PROJECTS SECTION
+   ========================================================================== */
+
+.related-projects {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(150, 90, 255, 0.2);
+}
+
+.related-projects h3 {
+  font-size: 1.25rem;
+  color: #fde68a;
+  margin-bottom: 1rem;
+  font-family: var(--font-display);
+}
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.related-card {
+  background: rgba(150, 90, 255, 0.1);
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.related-card:hover {
+  transform: translateY(-4px);
+  border-color: #965aff;
+  box-shadow: 0 8px 20px rgba(150, 90, 255, 0.3);
+}
+
+.related-card h4 {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.related-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   STAR BUTTON (GitHub-style)
+   ========================================================================== */
+
+.btn-star {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-star:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: #fbbf24;
+  color: #fbbf24;
+  transform: translateY(-2px);
+}
+
+.btn-star.starred {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-color: transparent;
+  color: #0a0e1a;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+}
+
+.btn-star.starred:hover {
+  transform: scale(1.05);
+}
+
+/* Star animation */
+@keyframes starBurst {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.btn-star.animating {
+  animation: starBurst 0.4s ease;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN ADJUSTMENTS
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .team-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+  }
+  
+  .project-timeline {
+    flex-direction: column;
+  }
+  
+  .timeline-item::after {
+    width: 2px;
+    height: 100%;
+    top: 2rem;
+    left: 1rem;
+    background: linear-gradient(180deg, rgba(150, 90, 255, 0.3), transparent);
+  }
+  
+  .related-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .project-stats {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .team-members {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ==========================================================================
+   PRINT STYLES
+   ========================================================================== */
+
+@media print {
+  .orb,
+  .controls-section,
+  .add-project-btn,
+  .btn-star,
+  .site-header,
+  .site-footer {
+    display: none !important;
+  }
+  
+  .project-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

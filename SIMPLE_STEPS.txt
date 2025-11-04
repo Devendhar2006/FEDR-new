@@ -1,0 +1,105 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                     WEBSITE LINK                              ║
+╚═══════════════════════════════════════════════════════════════╝
+
+📌 COPY THIS LINK:
+
+http://127.0.0.1:5050/portfolio-new.html
+
+
+╔═══════════════════════════════════════════════════════════════╗
+║              HOW TO SEE THE CHANGES                           ║
+╚═══════════════════════════════════════════════════════════════╝
+
+OPTION 1: EASIEST METHOD (Do this!)
+═════════════════════════════════════
+
+1️⃣  Go to the link above
+
+2️⃣  Press Ctrl + Shift + R
+    (Hold all three keys at once, then release)
+
+3️⃣  Wait 3 seconds
+
+4️⃣  Click "+ Add Project" button
+
+5️⃣  Try scrolling with mouse wheel
+
+6️⃣  You should see a bouncing message at bottom:
+    "⬇ Scroll for more fields ⬇"
+
+
+OPTION 2: CLEAR CACHE METHOD
+═════════════════════════════
+
+1️⃣  Press Ctrl + Shift + Delete
+
+2️⃣  In popup, check "Cached images and files"
+
+3️⃣  Click "Clear data"
+
+4️⃣  Go to: http://127.0.0.1:5050/portfolio-new.html
+
+5️⃣  Click "+ Add Project"
+
+6️⃣  Scroll with mouse wheel
+
+
+OPTION 3: FRESH START
+══════════════════════
+
+1️⃣  Close ALL browser windows
+
+2️⃣  Open browser again
+
+3️⃣  Press Ctrl + Shift + N (Incognito mode)
+
+4️⃣  Go to: http://127.0.0.1:5050/portfolio-new.html
+
+5️⃣  Click "+ Add Project"
+
+6️⃣  Scroll with mouse wheel
+
+
+╔═══════════════════════════════════════════════════════════════╗
+║           WHAT YOU SHOULD SEE AFTER FIXING                    ║
+╚═══════════════════════════════════════════════════════════════╝
+
+When you open the modal, you'll see:
+
+✅ At the BOTTOM of screen: 
+   A bouncing message "⬇ Scroll for more fields ⬇"
+
+✅ On the RIGHT side:
+   A purple-cyan gradient scrollbar
+
+✅ When you scroll down:
+   - Technologies field
+   - Live URL field  
+   - Save Project button
+   - Cancel button
+
+
+╔═══════════════════════════════════════════════════════════════╗
+║                    QUICK TEST                                 ║
+╚═══════════════════════════════════════════════════════════════╝
+
+1. Go to: http://127.0.0.1:5050/portfolio-new.html
+
+2. Press: Ctrl + Shift + R
+
+3. Look for bouncing "⬇ Scroll for more fields ⬇" at bottom
+
+4. If you see it → IT WORKS! ✅
+
+5. If you don't see it → Try Option 2 or 3 above
+
+
+═══════════════════════════════════════════════════════════════
+
+REMEMBER: The code is FIXED. You just need to clear your
+browser's cache so it loads the NEW code instead of OLD cached
+version!
+
+═══════════════════════════════════════════════════════════════
+

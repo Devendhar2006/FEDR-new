@@ -1,17 +1,28 @@
 const mongoose = require('mongoose');
 
 const portfolioSchema = new mongoose.Schema({
+  // Item Type: project, certification, achievement
+  itemType: {
+    type: String,
+    enum: ['project', 'certification', 'achievement'],
+    default: 'project',
+    required: true
+  },
+  
   // Basic Information
   title: {
     type: String,
-    required: [true, 'Project title is required for cosmic identification'],
+    required: [true, 'Title is required for cosmic identification'],
     trim: true,
-    maxlength: [100, 'Project title cannot exceed 100 characters']
+    maxlength: [100, 'Title cannot exceed 100 characters']
   },
   
   description: {
     type: String,
-    required: [true, 'Project description is required to explain your cosmic creation'],
+    required: function() {
+      // Only required for projects, not certifications/achievements
+      return this.itemType === 'project' || !this.itemType;
+    },
     maxlength: [1000, 'Description cannot exceed 1000 characters']
   },
   
@@ -25,7 +36,7 @@ const portfolioSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Project category is required for cosmic classification'],
     enum: {
-      values: ['web', 'mobile', 'ai', 'design', 'backend', 'frontend', 'fullstack', 'game', 'blockchain', 'iot', 'other'],
+      values: ['web', 'mobile', 'ai', 'design', 'backend', 'frontend', 'fullstack', 'game', 'blockchain', 'iot', 'certification', 'achievement', 'other'],
       message: 'Category must be one of the specified cosmic project types'
     }
   },
@@ -105,11 +116,51 @@ const portfolioSchema = new mongoose.Schema({
   
   timeline: {
     startDate: {
-      type: Date,
-      required: [true, 'Project start date is required for cosmic timeline']
+      type: Date
     },
     endDate: Date,
     duration: String // e.g., "2 months", "1 week"
+  },
+  
+  // Certification-specific fields
+  certification: {
+    issuingOrganization: {
+      type: String,
+      maxlength: [200, 'Organization name cannot exceed 200 characters']
+    },
+    issueDate: Date,
+    expiryDate: Date,
+    credentialId: {
+      type: String,
+      maxlength: [100, 'Credential ID cannot exceed 100 characters']
+    },
+    credentialUrl: {
+      type: String,
+      match: [/^https?:\/\/.+/, 'Please provide a valid credential URL']
+    },
+    skillsGained: [{
+      type: String,
+      trim: true,
+      maxlength: [50, 'Each skill cannot exceed 50 characters']
+    }]
+  },
+  
+  // Achievement-specific fields
+  achievement: {
+    achievementCategory: {
+      type: String,
+      enum: ['Award', 'Recognition', 'Milestone', 'Competition'],
+      default: 'Recognition'
+    },
+    achievementDate: Date,
+    organization: {
+      type: String,
+      maxlength: [200, 'Organization name cannot exceed 200 characters']
+    },
+    achievementDetails: {
+      type: String,
+      maxlength: [2000, 'Achievement details cannot exceed 2000 characters']
+    }
   },
   
   // Collaboration and Team

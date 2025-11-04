@@ -1,0 +1,50 @@
+<!-- ================================================
+     COSMIC DEVSPACE - NAVIGATION BAR COMPONENT
+     ================================================ -->
+
+<nav class="navbar">
+  <!-- LEFT: Logo -->
+  <div class="navbar-logo">
+    <a href="index.html">
+      🚀 Cosmic DevSpace
+    </a>
+  </div>
+
+  <!-- CENTER: Navigation Links -->
+  <ul class="navbar-menu">
+    <li><a href="index.html" class="nav-link">Home</a></li>
+    <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+    <li><a href="projects.html" class="nav-link">Projects</a></li>
+    <li><a href="blog.html" class="nav-link">Blog</a></li>
+    <li><a href="guestbook.html" class="nav-link">Guestbook</a></li>
+    <li><a href="analytics.html" class="nav-link">Analytics</a></li>
+    <li><a href="contact.html" class="nav-link">Contact</a></li>
+  </ul>
+
+  <!-- RIGHT: Auth Buttons (Logged Out) -->
+  <div class="navbar-auth" id="authLoggedOut">
+    <a href="login.html" class="nav-link">Sign In</a>
+    <a href="register.html" class="btn-register">Register</a>
+  </div>
+
+  <!-- RIGHT: User Menu (Logged In) -->
+  <div class="navbar-user" id="authLoggedIn" style="display: none;">
+    <span class="user-greeting">Hi, <span id="userName">User</span></span>
+    <div class="user-menu">
+      <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
+      <div class="dropdown-menu">
+        <a href="profile.html">👤 Profile</a>
+        <a href="admin.html" id="adminLink" style="display: none;">⚙️ Admin</a>
+        <a href="settings.html">⚙️ Settings</a>
+        <a href="#" id="logoutBtn">🚪 Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Toggle -->
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</nav>

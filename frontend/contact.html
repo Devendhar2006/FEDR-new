@@ -1,69 +1,220 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cosmic DevSpace • Contact</title>
-  <link rel="stylesheet" href="./css/styles.css" />
-</head><body class="contact-page">
-  <header class="site-header">
-    <div class="logo">🚀 Cosmic DevSpace</div>
-    <nav class="nav">
-      <a href="index.html">Home</a>
-      <a href="portfolio.html">Portfolio</a>
-      <a href="projects.html">Projects</a>
-      <a href="blog.html">Blog</a>
-      <a href="guestbook.html">Guestbook</a>
-      <a href="analytics.html">Analytics</a>
-      <a href="contact.html" class="active">Contact</a>
-      <span class="auth-links">
-        <a href="login.html" id="loginLink">Sign In</a>
-        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
-        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
-      </span>
-    </nav>
-  </header>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📧 Contact - Cosmic DevSpace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/navbar.css">
+  <link rel="stylesheet" href="./css/contact.css">
+</head>
+<body class="contact-page">
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <a href="index.html">🚀 Cosmic DevSpace</a>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+      <li><a href="projects.html" class="nav-link">Projects</a></li>
+      <li><a href="blog.html" class="nav-link">Blog</a></li>
+      <li><a href="guestbook.html" class="nav-link">Guestbook</a></li>
+      <li><a href="analytics.html" class="nav-link">Analytics</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+    <div class="navbar-auth" id="authLoggedOut">
+      <a href="login.html" class="nav-link">Sign In</a>
+      <a href="register.html" class="btn-register">Register</a>
+    </div>
+    <div class="navbar-user" id="authLoggedIn" style="display: none;">
+      <span class="user-greeting">Hi, <span id="userName">User</span></span>
+      <div class="user-menu">
+        <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
+        <div class="dropdown-menu">
+          <a href="profile.html">👤 Profile</a>
+          <a href="admin.html" id="adminLink" style="display: none;">⚙️ Admin</a>
+          <a href="settings.html">⚙️ Settings</a>
+          <a href="#" id="logoutBtn">🚪 Logout</a>
+        </div>
+      </div>
+    </div>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
 
-  <main class="container">
-    <h1 class="page-title">📮 Contact</h1>
-    <section class="contact-card">
-      <form id="contactForm" class="form">
-        <div class="row two-col">
+  <!-- Floating Orbs -->
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+
+  <!-- Hero Section -->
+  <section class="contact-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">📧 Get in Touch 📧</h1>
+      <p class="hero-subtitle">Have a question or want to work together?</p>
+    </div>
+  </section>
+
+  <main class="container contact-container">
+    <div class="contact-grid">
+      <!-- Contact Form -->
+      <div class="contact-form-section">
+        <h2 class="section-title">Send a Message</h2>
+        <form id="contactForm" class="contact-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="contactName">Your Name <span class="required">*</span></label>
+              <input id="contactName" name="name" type="text" required maxlength="100" placeholder="Jane Doe">
+            </div>
+            <div class="field">
+              <label for="contactEmail">Email <span class="required">*</span></label>
+              <input id="contactEmail" name="email" type="email" required placeholder="jane@example.com">
+            </div>
+          </div>
+          
           <div class="field">
-            <label for="cName">Your Name</label>
-            <input type="text" id="cName" placeholder="Jane Doe" required />
+            <label for="contactSubject">Subject <span class="required">*</span></label>
+            <input id="contactSubject" name="subject" type="text" required maxlength="100" placeholder="Project Collaboration">
           </div>
+          
           <div class="field">
-            <label for="cEmail">Email</label>
-            <input type="email" id="cEmail" placeholder="you@example.com" required />
+            <label for="contactMessage">Message <span class="required">*</span></label>
+            <textarea 
+              id="contactMessage" 
+              name="message" 
+              rows="6" 
+              required 
+              maxlength="2000" 
+              placeholder="Tell me more about..."
+            ></textarea>
+            <span class="char-counter"><span id="messageCharCount">0</span>/2000</span>
           </div>
-        </div>
-        <div class="row">
-          <div class="field" style="width:100%">
-            <label for="cSubject">Subject</label>
-            <input type="text" id="cSubject" placeholder="Let's chat" required />
+          
+          <div class="field captcha-field">
+            <label>Security Check <span class="required">*</span></label>
+            <div class="captcha-container">
+              <span class="captcha-question" id="captchaQuestion">Click all traffic lights</span>
+              <input id="captchaAnswer" name="captcha" type="text" required placeholder="Type 'verified'">
+            </div>
           </div>
-        </div>
-        <div class="row">
-          <div class="field" style="width:100%">
-            <label for="cMsg">Message</label>
-            <textarea id="cMsg" placeholder="Your message…" rows="5" required></textarea>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn-gradient send-btn" id="sendBtn">
+              <span class="btn-text">📧 Send Message</span>
+              <span class="btn-loader hidden">⏳ Sending...</span>
+            </button>
           </div>
+          
+          <p class="demo-note">Demo only — shows success toast locally.</p>
+          <div id="formMsg" class="form-message"></div>
+        </form>
+      </div>
+
+      <!-- Contact Info Section -->
+      <div class="contact-info-section">
+        <h2 class="section-title">Connect with Me</h2>
+        
+        <div class="contact-methods">
+          <a href="mailto:vishu@cosmicdevspace.com" class="contact-method" target="_blank">
+            <span class="method-icon">📧</span>
+            <div class="method-content">
+              <span class="method-label">Email</span>
+              <span class="method-value">vishu@cosmicdevspace.com</span>
+            </div>
+          </a>
+          
+          <a href="https://github.com/vishu" class="contact-method" target="_blank" rel="noopener">
+            <span class="method-icon">🔗</span>
+            <div class="method-content">
+              <span class="method-label">GitHub</span>
+              <span class="method-value">github.com/vishu</span>
+            </div>
+          </a>
+          
+          <a href="https://linkedin.com/in/vishu" class="contact-method" target="_blank" rel="noopener">
+            <span class="method-icon">💼</span>
+            <div class="method-content">
+              <span class="method-label">LinkedIn</span>
+              <span class="method-value">linkedin.com/in/vishu</span>
+            </div>
+          </a>
+          
+          <a href="https://twitter.com/vishu" class="contact-method" target="_blank" rel="noopener">
+            <span class="method-icon">🐦</span>
+            <div class="method-content">
+              <span class="method-label">Twitter</span>
+              <span class="method-value">@vishu</span>
+            </div>
+          </a>
         </div>
-        <div class="actions">
-          <button class="btn-gradient" type="submit">Send</button>
+        
+        <div class="response-time">
+          <h3>⏱️ Response Time</h3>
+          <p>Usually within 24 hours</p>
         </div>
-        <p class="muted" style="margin:.5rem 0 0 0">Demo only — shows a success toast locally.</p>
-      </form>
-    </section>
+        
+        <div class="location-info">
+          <h3>📍 Location</h3>
+          <p>Based in India 🇮🇳</p>
+          <p class="timezone">IST (UTC+5:30)</p>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <footer class="site-footer">© <span id="year"></span> Cosmic DevSpace</footer>
+  <footer class="site-footer">
+    &copy; <span id="year"></span> Cosmic DevSpace. All rights reserved.
+  </footer>
+
   <script src="./js/app.js"></script>
+  <script src="./js/contact.js"></script>
   <script>
-    document.getElementById('contactForm').addEventListener('submit', e=>{
+    document.getElementById('year').textContent = new Date().getFullYear();
+    
+    // Character counter
+    const messageInput = document.getElementById('contactMessage');
+    const charCount = document.getElementById('messageCharCount');
+    messageInput.addEventListener('input', () => {
+      charCount.textContent = messageInput.value.length;
+      charCount.parentElement.classList.toggle('warning', messageInput.value.length > 1800);
+      charCount.parentElement.classList.toggle('danger', messageInput.value.length >= 2000);
+    });
+    
+    // Form submission
+    document.getElementById('contactForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      alert('Thanks! Message queued locally.');
-      e.target.reset();
+      const btn = document.getElementById('sendBtn');
+      const btnText = btn.querySelector('.btn-text');
+      const btnLoader = btn.querySelector('.btn-loader');
+      
+      btnText.classList.add('hidden');
+      btnLoader.classList.remove('hidden');
+      btn.disabled = true;
+      
+      setTimeout(() => {
+        const toast = document.createElement('div');
+        toast.className = 'toast success show';
+        toast.textContent = '✅ Message sent successfully!';
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+        
+        e.target.reset();
+        charCount.textContent = '0';
+        btnText.classList.remove('hidden');
+        btnLoader.classList.add('hidden');
+        btn.disabled = false;
+      }, 1500);
     });
   </script>
-</body></html>
+  <script src="./js/navbar.js"></script>
+</body>
+</html>

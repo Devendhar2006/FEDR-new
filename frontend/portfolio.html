@@ -1,53 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cosmic DevSpace • Portfolio</title>
-  <link rel="stylesheet" href="./css/styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
- </head>
- <body class="portfolio-page">
-  <header class="site-header">
-    <div class="logo">🚀 Cosmic DevSpace</div>
-    <nav class="nav">
-      <a href="index.html">Home</a>
-      <a href="portfolio.html" class="active">Portfolio</a>
-      <a href="projects.html">Projects</a>
-      <a href="blog.html">Blog</a>
-      <a href="guestbook.html">Guestbook</a>
-      <a href="analytics.html">Analytics</a>
-      <a href="contact.html">Contact</a>
-      <span class="auth-links">
-        <a href="login.html" id="loginLink">Sign In</a>
-        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
-        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
-      </span>
-    </nav>
-  </header>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✨ Portfolio - Cosmic DevSpace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/navbar.css">
+  <link rel="stylesheet" href="./css/portfolio.css">
+  <link rel="stylesheet" href="./css/portfolio-forms.css">
+  <link rel="stylesheet" href="./css/portfolio-item-detail.css">
+  <link rel="stylesheet" href="./css/portfolio-comments.css">
+  <link rel="stylesheet" href="./css/portfolio-cards.css">
+  <link rel="stylesheet" href="./css/portfolio-tabs.css">
+</head>
+<body class="portfolio-page">
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <a href="index.html">🚀 Cosmic DevSpace</a>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+      <li><a href="projects.html" class="nav-link">Projects</a></li>
+      <li><a href="blog.html" class="nav-link">Blog</a></li>
+      <li><a href="guestbook.html" class="nav-link">Guestbook</a></li>
+      <li><a href="analytics.html" class="nav-link">Analytics</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+    <div class="navbar-auth" id="authLoggedOut">
+      <a href="login.html" class="nav-link">Sign In</a>
+      <a href="register.html" class="btn-register">Register</a>
+    </div>
+    <div class="navbar-user" id="authLoggedIn" style="display: none;">
+      <span class="user-greeting">Hi, <span id="userName">User</span></span>
+      <div class="user-menu">
+        <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
+        <div class="dropdown-menu">
+          <a href="profile.html">👤 Profile</a>
+          <a href="admin.html" id="adminLink" style="display: none;">⚙️ Admin</a>
+          <a href="settings.html">⚙️ Settings</a>
+          <a href="#" id="logoutBtn">🚪 Logout</a>
+        </div>
+      </div>
+    </div>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
 
-  <main class="container blog-container" role="main" aria-label="Portfolio section">
-    <h1 class="page-title">✨ Portfolio</h1>
-    <div class="page-intro">
-      <p class="muted" aria-label="Page description">Featured work from the Cosmic collection.</p>
-      <div class="page-actions">
-        <button id="addProjectBtn" class="btn-gradient" aria-haspopup="dialog" aria-controls="projectModal">+ Add Project</button>
+  <!-- Floating Orbs Background (like home page) -->
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+
+  <!-- Hero Section -->
+  <section class="portfolio-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">✨ Featured Work from the Cosmic Collection ✨</h1>
+      <p class="hero-subtitle">Explore the galaxy of amazing projects</p>
+      
+      <!-- Stats Badges -->
+      <div class="stats-container">
+        <div class="stat-badge">
+          <span class="stat-icon">📁</span>
+          <div class="stat-info">
+            <span class="stat-value" id="totalWorks">0</span>
+            <span class="stat-label">Total Works</span>
+          </div>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-icon">👁️</span>
+          <div class="stat-info">
+            <span class="stat-value" id="totalViews">0</span>
+            <span class="stat-label">Total Views</span>
+          </div>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-icon">❤️</span>
+          <div class="stat-info">
+            <span class="stat-value" id="totalLikes">0</span>
+            <span class="stat-label">Total Likes</span>
+          </div>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-icon">🎨</span>
+          <div class="stat-info">
+            <span class="stat-value" id="totalCategories">0</span>
+            <span class="stat-label">Categories</span>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="grid-cards" role="list">
-      <div class="tile" role="listitem" tabindex="0" aria-label="Project: Cosmic E-commerce - Space-themed store with clean UI">
-        <h3>Cosmic E‑commerce</h3>
-        <p>Space‑themed store with clean UI.</p>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container portfolio-container">
+    <!-- Filters & Controls -->
+    <div class="controls-section">
+      <!-- Item Type Tabs -->
+      <div class="item-type-tabs" id="itemTypeTabs">
+        <button class="type-tab active" data-type="all" onclick="filterByType('all')">
+          🌟 All Items <span class="tab-count" id="countAll">0</span>
+        </button>
+        <button class="type-tab" data-type="project" onclick="filterByType('project')">
+          📝 Projects <span class="tab-count" id="countProjects">0</span>
+        </button>
+        <button class="type-tab" data-type="certification" onclick="filterByType('certification')">
+          🎓 Certifications <span class="tab-count" id="countCertifications">0</span>
+        </button>
+        <button class="type-tab" data-type="achievement" onclick="filterByType('achievement')">
+          🏆 Achievements <span class="tab-count" id="countAchievements">0</span>
+        </button>
       </div>
-      <div class="tile" role="listitem" tabindex="0" aria-label="Project: Stellar Landing - Animated hero with parallax stars">
-        <h3>Stellar Landing</h3>
-        <p>Animated hero with parallax stars.</p>
-      </div>
-      <div class="tile" role="listitem" tabindex="0" aria-label="Project: Nebula Docs - Elegant docs site with search">
-        <h3>Nebula Docs</h3>
-        <p>Elegant docs site with search.</p>
+      
+      <div class="controls-row">
+        <!-- Category Filter -->
+        <div class="control-group">
+          <label for="categoryFilter">Category</label>
+          <select id="categoryFilter" class="filter-select">
+            <option value="">All Categories</option>
+            <option value="web">Web Design</option>
+            <option value="mobile">Mobile App</option>
+            <option value="ui">UI/UX</option>
+            <option value="branding">Branding</option>
+            <option value="illustration">Illustration</option>
+            <option value="photography">Photography</option>
+            <option value="3d">3D Design</option>
+            <option value="ai">AI/ML</option>
+          </select>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="control-group search-group">
+          <label for="searchInput">Search</label>
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by name, tech, or keyword...">
+          <span class="search-count" id="searchCount"></span>
+        </div>
+
+        <!-- Sort Dropdown -->
+        <div class="control-group">
+          <label for="sortSelect">Sort By</label>
+          <select id="sortSelect" class="filter-select">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="views">Most Viewed</option>
+            <option value="likes">Most Liked</option>
+            <option value="trending">Trending</option>
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
+          </select>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="control-group view-toggle">
+          <button class="view-btn active" data-view="grid" title="Grid View">
+            <span>⊞⊞⊞</span>
+          </button>
+          <button class="view-btn" data-view="list" title="List View">
+            <span>☰</span>
+          </button>
+        </div>
+
+        <!-- Add Buttons Group -->
+        <div class="add-buttons-group" id="addButtonsGroup" style="display: none;">
+          <button class="btn-gradient add-project-btn" id="addProjectBtn">📝 Add Project</button>
+          <button class="btn-gradient add-project-btn" id="addCertificationBtn">🎓 Add Certification</button>
+          <button class="btn-gradient add-project-btn" id="addAchievementBtn">🏆 Add Achievement</button>
+        </div>
       </div>
     </div>
+
+    <!-- Portfolio Gallery -->
+    <div class="portfolio-gallery" id="portfolioGallery">
+      <!-- Cards will be dynamically inserted here -->
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state hidden" id="emptyState">
+      <div class="empty-icon">🪐</div>
+      <h3>No Works Yet</h3>
+      <p>Your portfolio is ready to launch! Add your first portfolio item.</p>
+      <button class="btn-gradient" id="addFirstWork">+ Add First Work</button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner hidden" id="loadingSpinner">
+      <div class="spinner"></div>
+      <p>Loading cosmic works...</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination hidden" id="pagination">
+      <div class="pagination-info" id="paginationInfo">Showing 1-12 of 24 items</div>
+      <div class="pagination-controls">
+        <button class="page-btn" id="prevPage" disabled>← Previous</button>
+        <div class="page-numbers" id="pageNumbers"></div>
+        <button class="page-btn" id="nextPage">Next →</button>
+      </div>
+    </div>
+  </main>
 
     <!-- Upload/Edit Project Modal -->
     <div id="projectModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
@@ -59,81 +217,141 @@
         </header>
         <form id="projectForm" class="form-grid" novalidate>
           <div class="field">
-            <label for="projTitle">Title</label>
-            <input id="projTitle" name="title" type="text" required maxlength="100" placeholder="e.g., Galaxy Shop" />
+            <label for="projTitle">Project Title <span class="required">*</span></label>
+            <input id="projTitle" name="title" type="text" required maxlength="100" placeholder="e.g., Cosmic E-commerce Platform">
+            <span class="char-counter"><span id="titleCounter">0</span>/100</span>
           </div>
+          
           <div class="field">
-            <label for="projDesc">Description</label>
-            <textarea id="projDesc" name="description" rows="4" required maxlength="1000" placeholder="What makes this project cosmic?" ></textarea>
+            <label for="projDesc">Description <span class="required">*</span></label>
+            <textarea id="projDesc" name="description" rows="4" required maxlength="300" placeholder="Describe your cosmic creation..."></textarea>
+            <span class="char-counter"><span id="descCounter">0</span>/300</span>
           </div>
-          <div class="field two-col">
-            <div>
-              <label for="projCategory">Category</label>
-              <select id="projCategory" name="category" required>
-                <option value="" disabled selected>Select category</option>
-                <option>web</option>
-                <option>mobile</option>
-                <option>ai</option>
-                <option>design</option>
-                <option>backend</option>
-                <option>frontend</option>
-                <option>fullstack</option>
-                <option>game</option>
-                <option>blockchain</option>
-                <option>iot</option>
-                <option>other</option>
-              </select>
-            </div>
-            <div>
-              <label for="projLive">Live/Demo Link</label>
-              <input id="projLive" name="live" type="url" placeholder="https://your-demo.com" />
-            </div>
-          </div>
-          <div class="field two-col">
-            <div>
-              <label for="projTags">Tags (comma‑separated)</label>
-              <input id="projTags" name="tags" type="text" placeholder="e.g., ecommerce, ui, cosmos" />
-            </div>
-            <div>
-              <label for="projTech">Technologies (comma‑separated)</label>
-              <input id="projTech" name="technologies" type="text" placeholder="e.g., React, Node.js, MongoDB" />
-            </div>
-          </div>
+          
           <div class="field">
-            <span class="label">Visibility</span>
-            <div class="chip-row">
-              <label class="chip"><input type="radio" name="visibility" value="public" checked /> Public</label>
-              <label class="chip"><input type="radio" name="visibility" value="private" /> Private</label>
-            </div>
+            <label for="projCategory">Category <span class="required">*</span></label>
+            <select id="projCategory" name="category" required>
+              <option value="" disabled selected>Select a category</option>
+              <option value="web">Web Design</option>
+              <option value="mobile">Mobile App</option>
+              <option value="ui">UI/UX</option>
+              <option value="branding">Branding</option>
+              <option value="illustration">Illustration</option>
+              <option value="photography">Photography</option>
+              <option value="3d">3D Design</option>
+              <option value="ai">AI/ML</option>
+            </select>
           </div>
+          
           <div class="field">
-            <label>Images</label>
-            <div id="dropzone" class="dropzone" tabindex="0">
-              <input id="fileInput" type="file" accept="image/*" multiple hidden />
+            <label>Image Upload <span class="required">*</span> <span class="field-hint">(Max 5MB)</span></label>
+            <div id="dropzone" class="dropzone">
+              <input id="fileInput" type="file" accept="image/*" hidden>
               <div class="dz-instructions">
-                <strong>Drag & drop</strong> images here, or <button type="button" class="link-btn" id="chooseFiles">browse</button>
+                <strong>📁 Drag & drop</strong> image here, or <button type="button" class="link-btn" id="chooseFiles">browse</button>
               </div>
             </div>
-            <div id="previewGrid" class="preview-grid" aria-live="polite"></div>
+            <div id="previewGrid" class="preview-grid"></div>
           </div>
+          
+          <div class="field">
+            <label for="projTech">Technologies <span class="field-hint">(Max 8, searchable)</span></label>
+            <input id="projTech" name="technologies" type="text" placeholder="e.g., React, Node.js, MongoDB, TypeScript">
+            <div class="tech-pills" id="techPills"></div>
+          </div>
+          
+          <div class="field">
+            <label for="projLive">Live URL <span class="field-hint">(Optional)</span></label>
+            <input id="projLive" name="live" type="url" placeholder="https://your-live-site.com">
+          </div>
+          
+          <div class="field">
+            <label for="projGithub">GitHub URL <span class="field-hint">(Optional)</span></label>
+            <input id="projGithub" name="github" type="url" placeholder="https://github.com/username/repo">
+          </div>
+          
+          <div class="field">
+            <label for="projFigma">Figma URL <span class="field-hint">(Optional)</span></label>
+            <input id="projFigma" name="figma" type="url" placeholder="https://figma.com/file/...">
+          </div>
+          
           <div class="actions">
             <button type="button" class="btn-secondary" id="cancelProject">Cancel</button>
-            <button type="submit" class="btn-gradient">Save Project</button>
+            <button type="button" class="btn-secondary" id="saveDraft">Save as Draft</button>
+            <button type="submit" class="btn-gradient">Publish Project</button>
           </div>
-          <div id="formMsg" class="form-message" aria-live="polite"></div>
+          
+          <div id="formMsg" class="form-message"></div>
         </form>
       </div>
     </div>
-  </main>
+
+  <!-- Detail View Modal -->
+  <div id="detailModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h2 id="detailTitle">Project Details</h2>
+        <button class="icon-btn" id="closeDetailModal">✕</button>
+      </div>
+      <div class="modal-body detail-content" id="detailContent">
+        <!-- Content will be dynamically inserted -->
+      </div>
+    </div>
+  </div>
 
   <footer class="site-footer">
     &copy; <span id="year"></span> Cosmic DevSpace
   </footer>
 
+  <!-- Portfolio Item Modal (Unified for Project/Certification/Achievement) -->
+  <div id="portfolioModal" class="modal hidden">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card">
+      <div id="formContainer">
+        <!-- Form content will be dynamically inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Item Detail Modal (with Comments) -->
+  <div id="itemDetailModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeItemDetail()"></div>
+    <div id="itemDetailContent">
+      <!-- Item details and comments will be inserted here -->
+    </div>
+  </div>
+
   <script src="./js/app.js"></script>
   <script src="./js/portfolio.js"></script>
+  <script src="./js/api-client.js"></script>
+  <script src="./js/portfolio-forms.js"></script>
+  <script src="./js/portfolio-item-detail.js"></script>
+  <script src="./js/portfolio-comments.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+    
+    // Show add buttons if user is logged in
+    const user = CosmicAPI?.utils?.getCurrentUser();
+    if (user) {
+      const buttonsGroup = document.getElementById('addButtonsGroup');
+      if (buttonsGroup) {
+        buttonsGroup.style.display = 'flex';
+      }
+    }
+    
+    // Add button event listeners
+    document.getElementById('addProjectBtn')?.addEventListener('click', () => openAddModal('project'));
+    document.getElementById('addCertificationBtn')?.addEventListener('click', () => openAddModal('certification'));
+    document.getElementById('addAchievementBtn')?.addEventListener('click', () => openAddModal('achievement'));
+    
+    // Close portfolio modal on backdrop click
+    document.getElementById('portfolioModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'portfolioModal' || e.target.classList.contains('modal-backdrop')) {
+        closePortfolioModal();
+      }
+    });
   </script>
+  <script src="./js/navbar.js"></script>
 </body>
 </html>

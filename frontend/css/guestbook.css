@@ -1,0 +1,600 @@
+/* ==========================================================================
+   COSMIC DEVSPACE - GUESTBOOK PAGE
+   Visitor messages with emoji support and real-time display
+   ========================================================================== */
+
+/* Import portfolio base styles (orbs, hero, controls, etc.) */
+@import './portfolio.css';
+
+/* ==========================================================================
+   GUESTBOOK-SPECIFIC OVERRIDES & ADDITIONS
+   ========================================================================== */
+
+/* Guestbook Page Title */
+.guestbook-hero .hero-title {
+  background: linear-gradient(135deg, #fde68a 0%, #2bc4fa 50%, #965aff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ==========================================================================
+   GUESTBOOK FORM SECTION
+   ========================================================================== */
+
+.guestbook-form-section {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(19, 26, 52, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(10, 14, 26, 0.4);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: #fde68a;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  text-shadow: 0 0 20px rgba(253, 230, 138, 0.3);
+}
+
+.guestbook-form {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.message-input-wrapper {
+  position: relative;
+}
+
+.message-input-wrapper textarea {
+  width: 100%;
+  padding: 1rem;
+  padding-right: 3.5rem;
+  background: rgba(10, 14, 26, 0.8);
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+}
+
+.message-input-wrapper textarea:focus {
+  outline: none;
+  border-color: #965aff;
+  box-shadow: 0 0 0 3px rgba(150, 90, 255, 0.2);
+}
+
+.emoji-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  width: 36px;
+  height: 36px;
+  background: rgba(150, 90, 255, 0.2);
+  border: 1px solid rgba(150, 90, 255, 0.4);
+  border-radius: 8px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-btn:hover {
+  background: rgba(150, 90, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.captcha-field {
+  margin-top: 1rem;
+}
+
+.captcha-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(150, 90, 255, 0.1);
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 12px;
+}
+
+.captcha-question {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fde68a;
+  font-family: var(--font-display);
+}
+
+.captcha-container input {
+  flex: 1;
+  max-width: 150px;
+  padding: 0.75rem;
+  background: rgba(10, 14, 26, 0.8);
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.avatar-preview {
+  margin-top: 0.75rem;
+  display: none;
+}
+
+.avatar-preview.show {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(150, 90, 255, 0.1);
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 12px;
+}
+
+.avatar-preview img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(150, 90, 255, 0.5);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+/* ==========================================================================
+   FILTER BUTTONS
+   ========================================================================== */
+
+.filter-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(150, 90, 255, 0.5);
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #965aff, #2bc4fa);
+  border-color: transparent;
+  color: #131a34;
+  box-shadow: 0 0 20px rgba(150, 90, 255, 0.5);
+}
+
+/* ==========================================================================
+   GUESTBOOK ENTRIES
+   ========================================================================== */
+
+.guestbook-entries {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.guestbook-entry {
+  background: linear-gradient(135deg, rgba(150, 90, 255, 0.15), rgba(43, 196, 250, 0.1));
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideUp 0.4s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.guestbook-entry:hover {
+  transform: translateY(-5px) scale(1.01);
+  border-color: #2bc4fa;
+  box-shadow: 0 12px 32px rgba(43, 196, 250, 0.3), 0 0 30px rgba(150, 90, 255, 0.2);
+}
+
+.guestbook-entry.pinned {
+  border-color: #fde68a;
+  background: linear-gradient(135deg, rgba(253, 230, 138, 0.2), rgba(150, 90, 255, 0.15));
+}
+
+.guestbook-entry.pinned::before {
+  content: "📌";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.25rem;
+  filter: drop-shadow(0 0 10px rgba(253, 230, 138, 0.6));
+}
+
+.entry-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(150, 90, 255, 0.2);
+}
+
+.entry-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #965aff, #2bc4fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+  border: 2px solid rgba(150, 90, 255, 0.5);
+}
+
+.entry-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.entry-info {
+  flex: 1;
+}
+
+.entry-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.entry-timestamp {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.entry-message {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  word-wrap: break-word;
+}
+
+.entry-actions {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(150, 90, 255, 0.2);
+}
+
+.entry-action-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+.entry-action-btn:hover {
+  background: rgba(150, 90, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.entry-action-btn.liked {
+  color: #ff568f;
+}
+
+.entry-action-btn.liked:hover {
+  background: rgba(255, 88, 143, 0.2);
+}
+
+.like-count {
+  font-weight: 700;
+}
+
+/* Like Animation */
+@keyframes likeAnimation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.entry-action-btn.liked.animating {
+  animation: likeAnimation 0.4s ease;
+}
+
+/* Particle Burst on Like */
+@keyframes particleBurst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(1);
+  }
+}
+
+.like-particle {
+  position: absolute;
+  font-size: 1rem;
+  pointer-events: none;
+  animation: particleBurst 0.6s ease-out forwards;
+}
+
+/* ==========================================================================
+   EMOJI PICKER
+   ========================================================================== */
+
+.emoji-picker {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: rgba(19, 26, 52, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(150, 90, 255, 0.4);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 16px 48px rgba(10, 14, 26, 0.6);
+  max-width: 400px;
+  width: 90%;
+  animation: fadeIn 0.3s ease;
+}
+
+.emoji-picker.hidden {
+  display: none;
+}
+
+.emoji-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(150, 90, 255, 0.3);
+}
+
+.emoji-picker-header span {
+  font-weight: 700;
+  color: #fde68a;
+  font-size: 1.1rem;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.emoji-option {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 8px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-option:hover {
+  background: rgba(150, 90, 255, 0.3);
+  transform: scale(1.2);
+}
+
+/* ==========================================================================
+   PREVIEW MODAL
+   ========================================================================== */
+
+.entry-preview {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(150, 90, 255, 0.15), rgba(43, 196, 250, 0.1));
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 16px;
+}
+
+.entry-preview .entry-header {
+  margin-bottom: 1rem;
+}
+
+.entry-preview .entry-message {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   CHARACTER COUNTER
+   ========================================================================== */
+
+.char-counter {
+  display: block;
+  text-align: right;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.char-counter.warning {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.char-counter.danger {
+  color: #ff568f;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .guestbook-form-section {
+    padding: 1.5rem 1rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+  
+  .filter-buttons {
+    width: 100%;
+  }
+  
+  .filter-btn {
+    flex: 1;
+  }
+  
+  .entry-actions {
+    flex-wrap: wrap;
+  }
+  
+  .emoji-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .captcha-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .captcha-container input {
+    max-width: 100%;
+  }
+  
+  .emoji-picker {
+    width: 95%;
+    max-width: none;
+  }
+}
+
+/* ==========================================================================
+   ANIMATIONS
+   ========================================================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(150, 90, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(150, 90, 255, 0.6);
+  }
+}
+
+.guestbook-entry:hover {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   PRINT STYLES
+   ========================================================================== */
+
+@media print {
+  .orb,
+  .controls-section,
+  .guestbook-form-section,
+  .filter-buttons,
+  .entry-actions,
+  .pagination,
+  .site-header,
+  .site-footer {
+    display: none !important;
+  }
+  
+  .guestbook-entry {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #ccc;
+    margin-bottom: 1rem;
+  }
+  
+  .entry-message {
+    color: black;
+  }
+}

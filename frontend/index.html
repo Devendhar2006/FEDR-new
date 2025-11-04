@@ -1,10 +1,14 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>DevSpace | Launch Your Projects</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/navbar.css">
   <style>
 
     /* Enhanced floating orbs */
@@ -478,23 +482,53 @@
     </g>
   </svg>
 
-  <header class="site-header">
-    <div class="logo">🚀 Cosmic DevSpace</div>
-    <nav class="nav">
-      <a href="index.html" class="active">Home</a>
-      <a href="portfolio.html">Portfolio</a>
-      <a href="projects.html">Projects</a>
-      <a href="blog.html">Blog</a>
-      <a href="guestbook.html">Guestbook</a>
-      <a href="analytics.html">Analytics</a>
-      <a href="contact.html">Contact</a>
-      <span class="auth-links">
-        <a href="login.html" id="loginLink">Sign In</a>
-        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
-        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
-      </span>
-    </nav>
-  </header>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <!-- LEFT: Logo -->
+    <div class="navbar-logo">
+      <a href="index.html">
+        🚀 Cosmic DevSpace
+      </a>
+    </div>
+
+    <!-- CENTER: Navigation Links -->
+    <ul class="navbar-menu">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+      <li><a href="projects.html" class="nav-link">Projects</a></li>
+      <li><a href="blog.html" class="nav-link">Blog</a></li>
+      <li><a href="guestbook.html" class="nav-link">Guestbook</a></li>
+      <li><a href="analytics.html" class="nav-link">Analytics</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+
+    <!-- RIGHT: Auth Buttons (Logged Out) -->
+    <div class="navbar-auth" id="authLoggedOut">
+      <a href="login.html" class="nav-link">Sign In</a>
+      <a href="register.html" class="btn-register">Register</a>
+    </div>
+
+    <!-- RIGHT: User Menu (Logged In) -->
+    <div class="navbar-user" id="authLoggedIn" style="display: none;">
+      <span class="user-greeting">Hi, <span id="userName">User</span></span>
+      <div class="user-menu">
+        <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
+        <div class="dropdown-menu">
+          <a href="profile.html">👤 Profile</a>
+          <a href="admin.html" id="adminLink" style="display: none;">⚙️ Admin</a>
+          <a href="settings.html">⚙️ Settings</a>
+          <a href="#" id="logoutBtn">🚪 Logout</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
 
   <!-- Main Content -->
   <div class="parallax-container">
@@ -1282,6 +1316,7 @@
       console.log('🌌 Cosmic DevSpace loaded successfully!');
     });
   </script>
+  <script src="./js/navbar.js"></script>
   <script src="./js/app.js"></script>
 </body>
 </html>

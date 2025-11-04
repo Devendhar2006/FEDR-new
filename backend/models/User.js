@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address']
+    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email address']
   },
   
   password: {
@@ -29,8 +29,25 @@ const userSchema = new mongoose.Schema({
     select: false // Don't include password in queries by default
   },
   
+  // OAuth Integration
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true // Allows multiple null values
+  },
+  
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  
   // Profile Information
   profile: {
+    displayName: {
+      type: String,
+      trim: true,
+      maxlength: [100, 'Display name cannot exceed 100 characters']
+    },
     firstName: {
       type: String,
       trim: true,
@@ -253,6 +270,20 @@ userSchema.methods.getAuthTokenData = function() {
     email: this.email,
     role: this.role,
     avatar: this.profile.avatar
+  };
+};
+
+// Instance method to get public profile
+userSchema.methods.getPublicProfile = function() {
+  return {
+    id: this._id,
+    username: this.username,
+    email: this.email,
+    role: this.role,
+    profile: this.profile,
+    achievements: this.achievements,
+    stats: this.stats,
+    createdAt: this.createdAt
   };
 };
 

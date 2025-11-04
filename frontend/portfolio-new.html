@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Portfolio - Cosmic DevSpace (Compact Form)</title>
+  <link rel="stylesheet" href="./css/styles.css?v=3">
+  <link rel="stylesheet" href="./css/portfolio-forms.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      min-height: 100vh;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Animated background particles */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .particle {
+      position: absolute;
+      background: rgba(150, 90, 255, 0.3);
+      border-radius: 50%;
+      animation: float 15s infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-100px) rotate(180deg); }
+    }
+    
+    /* Header */
+    .header {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(150, 90, 255, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #965aff, #2bc4fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .nav {
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+    
+    .nav a {
+      color: #ddd;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .nav a:hover, .nav a.active {
+      color: #965aff;
+    }
+    
+    /* Main container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      position: relative;
+      z-index: 10;
+    }
+    
+    /* Page header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 50px;
+      animation: fadeInDown 0.6s;
+    }
+    
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .page-header h1 {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, #965aff, #2bc4fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .page-header p {
+      color: #aaa;
+      font-size: 1.2rem;
+    }
+    
+    /* Controls bar */
+    .controls-bar {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 40px;
+      border: 1px solid rgba(150, 90, 255, 0.2);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 12px 20px 12px 45px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(150, 90, 255, 0.3);
+      border-radius: 25px;
+      color: #fff;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: #965aff;
+      box-shadow: 0 0 20px rgba(150, 90, 255, 0.3);
+    }
+    
+    .search-box::before {
+      content: '🔍';
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+    }
+    
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    select, .btn {
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(150, 90, 255, 0.3);
+      border-radius: 15px;
+      color: #fff;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    select:hover, .btn:hover {
+      background: rgba(150, 90, 255, 0.2);
+      border-color: #965aff;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: #965aff;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #965aff, #2bc4fa);
+      border: none;
+      font-weight: 600;
+      box-shadow: 0 5px 15px rgba(150, 90, 255, 0.3);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(150, 90, 255, 0.5);
+    }
+    
+    .add-buttons-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .add-buttons-group .btn {
+      font-size: 0.9rem;
+      padding: 10px 18px;
+      white-space: nowrap;
+    }
+    
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .stat-item {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 15px 25px;
+      border-radius: 15px;
+      border: 1px solid rgba(150, 90, 255, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .stat-item span {
+      font-size: 1.5rem;
+    }
+    
+    /* Portfolio grid */
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+    
+    .portfolio-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(150, 90, 255, 0.2);
+      transition: all 0.3s;
+      cursor: pointer;
+      animation: fadeInUp 0.6s;
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .portfolio-card:hover {
+      transform: translateY(-10px);
+      border-color: #965aff;
+      box-shadow: 0 20px 40px rgba(150, 90, 255, 0.4);
+    }
+    
+    .card-image {
+      width: 100%;
+      height: 220px;
+      background: linear-gradient(135deg, #302b63, #24243e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .card-content {
+      padding: 25px;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 15px;
+    }
+    
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+    
+    .card-category {
+      display: inline-block;
+      padding: 5px 12px;
+      background: rgba(150, 90, 255, 0.3);
+      border-radius: 15px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .card-description {
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .card-tech {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    
+    .tech-tag {
+      padding: 5px 10px;
+      background: rgba(43, 196, 250, 0.2);
+      border: 1px solid rgba(43, 196, 250, 0.5);
+      border-radius: 10px;
+      font-size: 0.75rem;
+      color: #2bc4fa;
+    }
+    
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .card-stats {
+      display: flex;
+      gap: 15px;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    
+    .card-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(150, 90, 255, 0.3);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 1rem;
+    }
+    
+    .icon-btn:hover {
+      background: rgba(150, 90, 255, 0.3);
+      transform: scale(1.1);
+    }
+    
+    /* Loading state */
+    .loading {
+      text-align: center;
+      padding: 100px 20px;
+      font-size: 1.2rem;
+      color: #aaa;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(150, 90, 255, 0.3);
+      border-top: 3px solid #965aff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 100px 20px;
+    }
+    
+    .empty-state-icon {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+    
+    .empty-state p {
+      color: #aaa;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    
+    /* Modal - SCROLLING FIXED v2 */
+    .modal {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: rgba(0, 0, 0, 0.85) !important;
+      display: none !important;
+      z-index: 99999 !important;
+      overflow-y: scroll !important;
+      overflow-x: hidden !important;
+      padding: 40px 20px !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+    
+    .modal.active {
+      display: block !important;
+    }
+    
+    /* Prevent body scroll when modal is open */
+    body.modal-open {
+      overflow: hidden !important;
+      position: fixed !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
+    .modal-content {
+      background: rgba(15, 12, 41, 0.98) !important;
+      backdrop-filter: blur(20px) !important;
+      border-radius: 20px !important;
+      padding: 20px 30px !important;
+      max-width: 550px !important;
+      width: 100% !important;
+      margin: 20px auto !important;
+      max-height: 90vh !important;
+      overflow-y: auto !important;
+      border: 2px solid rgba(150, 90, 255, 0.4) !important;
+      animation: modalSlideIn 0.3s !important;
+      position: relative !important;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+    }
+    
+    /* Scrollbar styling for modal - VISIBLE */
+    .modal::-webkit-scrollbar {
+      width: 12px !important;
+    }
+    
+    .modal::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.5) !important;
+      border-radius: 10px !important;
+    }
+    
+    .modal::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #965aff, #2bc4fa) !important;
+      border-radius: 10px !important;
+      border: 2px solid rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .modal::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #a970ff, #3bd4ff) !important;
+      box-shadow: 0 0 10px rgba(150, 90, 255, 0.5) !important;
+    }
+    
+    /* Remove scroll indicator since form now fits */
+    
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(150, 90, 255, 0.2);
+    }
+    
+    .modal-header h2 {
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #965aff, #2bc4fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: transform 0.3s;
+      line-height: 1;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+    }
+    
+    .close-btn:hover {
+      transform: rotate(90deg);
+      color: #ff568f;
+    }
+    
+    .form-group {
+      margin-bottom: 12px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #ddd;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 8px 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(150, 90, 255, 0.3);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      box-sizing: border-box;
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
+      max-height: 80px;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    .char-counter {
+      font-size: 0.75rem;
+      color: #aaa;
+      text-align: right;
+      margin-top: 5px;
+    }
+    
+    /* Rich Text Editor */
+    .rich-text-wrapper {
+      border: 1px solid rgba(150, 90, 255, 0.3);
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    
+    .rich-text-toolbar {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px;
+      display: flex;
+      gap: 5px;
+      border-bottom: 1px solid rgba(150, 90, 255, 0.2);
+    }
+    
+    .rich-text-toolbar button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(150, 90, 255, 0.3);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+    
+    .rich-text-toolbar button:hover {
+      background: rgba(150, 90, 255, 0.2);
+      border-color: #965aff;
+    }
+    
+    .rich-text-editor {
+      min-height: 120px;
+      max-height: 200px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      overflow-y: auto;
+      outline: none;
+    }
+    
+    /* Image Upload */
+    .dropzone {
+      border: 2px dashed rgba(150, 90, 255, 0.4);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: #965aff;
+      background: rgba(150, 90, 255, 0.1);
+    }
+    
+    .dz-instructions {
+      color: #aaa;
+    }
+    
+    .link-btn {
+      background: none;
+      border: none;
+      color: #fde68a;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .image-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .image-preview-item {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid rgba(150, 90, 255, 0.3);
+    }
+    
+    .image-preview-item img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+    
+    .remove-image {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255, 86, 143, 0.9);
+      border: none;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+    }
+    
+    /* Tags */
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(43, 196, 250, 0.2);
+      border: 1px solid rgba(43, 196, 250, 0.5);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: #2bc4fa;
+    }
+    
+    .tag-pill button {
+      background: none;
+      border: none;
+      color: #2bc4fa;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+      width: 18px;
+      height: 18px;
+    }
+    
+    .tag-pill button:hover {
+      color: #ff568f;
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #965aff;
+      box-shadow: 0 0 20px rgba(150, 90, 255, 0.3);
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+      .portfolio-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .nav {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated particles -->
+  <div class="particles" id="particles"></div>
+  
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">🚀 Cosmic DevSpace</div>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="portfolio.html" class="active">Portfolio</a>
+        <a href="projects.html">Projects</a>
+        <a href="blog.html">Blog</a>
+        <a href="guestbook.html">Guestbook</a>
+        <a href="analytics.html">Analytics</a>
+        <a href="contact.html">Contact</a>
+        <a href="login.html" id="authLink">Login</a>
+      </nav>
+    </div>
+  </header>
+  
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>✨ Portfolio Gallery</h1>
+      <p>Explore amazing cosmic projects from talented developers</p>
+    </div>
+    
+    <!-- Controls Bar -->
+    <div class="controls-bar">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search projects...">
+      </div>
+      
+      <div class="filter-group">
+        <select id="categoryFilter">
+          <option value="">All Categories</option>
+          <option value="web">Web Development</option>
+          <option value="mobile">Mobile Apps</option>
+          <option value="ai">AI & ML</option>
+          <option value="design">UI/UX Design</option>
+          <option value="backend">Backend</option>
+          <option value="frontend">Frontend</option>
+          <option value="fullstack">Full Stack</option>
+          <option value="game">Game Dev</option>
+          <option value="blockchain">Blockchain</option>
+        </select>
+        
+        <select id="sortSelect">
+          <option value="-createdAt">Newest First</option>
+          <option value="createdAt">Oldest First</option>
+          <option value="-metrics.views">Most Viewed</option>
+          <option value="-metrics.likes">Most Liked</option>
+        </select>
+        
+        <div class="add-buttons-group" style="display: none;" id="addButtonsGroup">
+          <button class="btn btn-primary" id="addProjectBtn">
+            📝 Add Project
+          </button>
+          <button class="btn btn-primary" id="addCertificationBtn">
+            🎓 Add Certification
+          </button>
+          <button class="btn btn-primary" id="addAchievementBtn">
+            🏆 Add Achievement
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span>📊</span>
+        <div>
+          <div style="color: #aaa; font-size: 0.8rem;">Total Projects</div>
+          <div id="totalProjects" style="font-weight: bold; font-size: 1.2rem;">0</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <span>👁️</span>
+        <div>
+          <div style="color: #aaa; font-size: 0.8rem;">Total Views</div>
+          <div id="totalViews" style="font-weight: bold; font-size: 1.2rem;">0</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <span>❤️</span>
+        <div>
+          <div style="color: #aaa; font-size: 0.8rem;">Total Likes</div>
+          <div id="totalLikes" style="font-weight: bold; font-size: 1.2rem;">0</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Portfolio Grid -->
+    <div id="portfolioGrid" class="portfolio-grid">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading cosmic projects...</p>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Portfolio Item Modal (Unified for Project/Certification/Achievement) -->
+  <div id="portfolioModal" class="modal">
+    <div class="modal-content">
+      <div id="formContainer">
+        <!-- Form content will be dynamically inserted here -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- Comment Modal -->
+  <div id="commentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="commentModalTitle">💬 Comment on Project</h2>
+        <button class="close-btn" onclick="closeCommentModal()">&times;</button>
+      </div>
+      
+      <div style="margin-bottom: 15px; padding: 10px; background: rgba(150, 90, 255, 0.1); border-radius: 10px; border-left: 3px solid #965aff;">
+        <span style="font-size: 0.85rem; color: #aaa;">About:</span>
+        <div id="commentProjectTitle" style="font-weight: 600; color: #965aff; margin-top: 5px;"></div>
+      </div>
+      
+      <form id="commentForm">
+        <div class="form-group">
+          <label for="commentName">Your Name *</label>
+          <input type="text" id="commentName" required maxlength="100" placeholder="John Doe">
+        </div>
+        
+        <div class="form-group">
+          <label for="commentEmail">Email (Optional)</label>
+          <input type="email" id="commentEmail" placeholder="john@example.com">
+        </div>
+        
+        <div class="form-group">
+          <label for="commentMessage">Your Comment * <span style="font-size: 0.85rem; color: #aaa;">(Max 240 chars)</span></label>
+          <textarea id="commentMessage" required maxlength="240" placeholder="Share your thoughts about this project..." style="min-height: 80px;"></textarea>
+          <div style="text-align: right; font-size: 0.8rem; color: #aaa; margin-top: 5px;">
+            <span id="commentCharCount">0</span>/240
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" style="flex: 1;">Post Comment</button>
+          <button type="button" class="btn btn-secondary" onclick="closeCommentModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script src="./js/api-client.js"></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/portfolio-forms.js"></script>
+  <script>
+    // Generate animated particles
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 30; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      const size = Math.random() * 100 + 50;
+      particle.style.width = size + 'px';
+      particle.style.height = size + 'px';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 15 + 's';
+      particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+      particlesContainer.appendChild(particle);
+    }
+    
+    let projects = [];
+    let currentEditId = null;
+    
+    // Check auth and show add buttons
+    const user = CosmicAPI.utils.getCurrentUser();
+    if (user) {
+      document.getElementById('addButtonsGroup').style.display = 'flex';
+      document.getElementById('authLink').textContent = user.username;
+      document.getElementById('authLink').href = 'profile.html';
+    }
+    
+    // Load projects
+    async function loadProjects() {
+      try {
+        const searchQuery = document.getElementById('searchInput').value;
+        const category = document.getElementById('categoryFilter').value;
+        const sort = document.getElementById('sortSelect').value;
+        
+        const params = { limit: 50 };
+        if (searchQuery) params.search = searchQuery;
+        if (category) params.category = category;
+        if (sort) params.sort = sort;
+        
+        const response = await CosmicAPI.projects.getAll(params);
+        projects = response.data?.projects || [];
+        
+        renderProjects();
+        updateStats();
+      } catch (error) {
+        console.error('Error loading projects:', error);
+        document.getElementById('portfolioGrid').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">❌</div>
+            <p>Error loading projects. Please try again.</p>
+          </div>
+        `;
+      }
+    }
+    
+    // Render projects
+    function renderProjects() {
+      const grid = document.getElementById('portfolioGrid');
+      
+      if (projects.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🚀</div>
+            <p>No projects found</p>
+            <p style="font-size: 0.9rem; margin-top: 10px;">Be the first to add a cosmic project!</p>
+          </div>
+        `;
+        return;
+      }
+      
+      grid.innerHTML = projects.map(project => `
+        <div class="portfolio-card" onclick="viewProject('${project._id}')">
+          <div class="card-image">
+            ${project.images?.[0]?.url ? `<img src="${project.images[0].url}" alt="${project.title}">` : '🎨'}
+          </div>
+          <div class="card-content">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">${project.title}</h3>
+                <span class="card-category">${project.category}</span>
+              </div>
+            </div>
+            <p class="card-description">${project.description || project.shortDescription}</p>
+            <div class="card-tech">
+              ${(project.technologies || []).slice(0, 4).map(tech => `
+                <span class="tech-tag">${tech}</span>
+              `).join('')}
+            </div>
+            <div class="card-footer">
+              <div class="card-stats">
+                <span>👁️ ${project.metrics?.views || 0}</span>
+                <span>❤️ ${project.metrics?.likes || 0}</span>
+              </div>
+              <div class="card-actions" onclick="event.stopPropagation()">
+                <button class="icon-btn" onclick="likeProject('${project._id}', event)" title="Like">
+                  ${project.isLikedByUser ? '❤️' : '🤍'}
+                </button>
+                <button class="icon-btn" onclick="openCommentModal('${project._id}', '${project.title}', event)" title="Leave Comment">
+                  💬
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Update stats
+    function updateStats() {
+      const totalProjects = projects.length;
+      const totalViews = projects.reduce((sum, p) => sum + (p.metrics?.views || 0), 0);
+      const totalLikes = projects.reduce((sum, p) => sum + (p.metrics?.likes || 0), 0);
+      
+      document.getElementById('totalProjects').textContent = totalProjects;
+      document.getElementById('totalViews').textContent = totalViews;
+      document.getElementById('totalLikes').textContent = totalLikes;
+    }
+    
+    // View project
+    function viewProject(id) {
+      window.location.href = `project-detail.html?id=${id}`;
+    }
+    
+    // Like project
+    async function likeProject(id, event) {
+      event.stopPropagation();
+      if (!user) {
+        alert('Please login to like projects');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      try {
+        await CosmicAPI.projects.toggleLike(id);
+        await loadProjects();
+      } catch (error) {
+        console.error('Error liking project:', error);
+      }
+    }
+    
+    // Old modal functions kept for backward compatibility (if needed elsewhere)
+    function openModal() {
+      openAddModal('project');
+    }
+    
+    function closeModal() {
+      closePortfolioModal();
+    }
+    
+    // Prevent closing when clicking inside modal content
+    document.querySelector('.modal-content')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+    
+    // Add buttons
+    document.getElementById('addProjectBtn')?.addEventListener('click', () => openAddModal('project'));
+    document.getElementById('addCertificationBtn')?.addEventListener('click', () => openAddModal('certification'));
+    document.getElementById('addAchievementBtn')?.addEventListener('click', () => openAddModal('achievement'));
+    
+    // Close portfolio modal on backdrop click
+    document.getElementById('portfolioModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'portfolioModal' || e.target.classList.contains('modal')) {
+        closePortfolioModal();
+      }
+    });
+    
+    // Notification function
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'rgba(46, 213, 115, 0.95)' : 'rgba(255, 86, 143, 0.95)'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        z-index: 10001;
+        animation: slideIn 0.3s ease-out;
+        font-weight: 500;
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+    
+    // Add notification animations
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(styleSheet);
+    
+    // Comment Modal Functions
+    let currentProjectId = null;
+    let currentProjectTitle = null;
+    
+    function openCommentModal(projectId, projectTitle, event) {
+      if (event) event.stopPropagation();
+      currentProjectId = projectId;
+      currentProjectTitle = projectTitle;
+      
+      document.getElementById('commentModal').classList.add('active');
+      document.body.classList.add('modal-open');
+      document.getElementById('commentProjectTitle').textContent = projectTitle;
+      
+      // Pre-fill name and email if user is logged in
+      const user = CosmicAPI.utils.getCurrentUser();
+      if (user) {
+        document.getElementById('commentName').value = user.username || '';
+        document.getElementById('commentEmail').value = user.email || '';
+      }
+    }
+    
+    function closeCommentModal() {
+      document.getElementById('commentModal').classList.remove('active');
+      document.body.classList.remove('modal-open');
+      document.getElementById('commentForm').reset();
+      document.getElementById('commentCharCount').textContent = '0';
+      currentProjectId = null;
+      currentProjectTitle = null;
+    }
+    
+    // Character count for comment textarea
+    document.getElementById('commentMessage').addEventListener('input', function() {
+      document.getElementById('commentCharCount').textContent = this.value.length;
+    });
+    
+    // Comment form submission
+    document.getElementById('commentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Posting...';
+      submitBtn.disabled = true;
+      
+      const commentData = {
+        name: document.getElementById('commentName').value.trim(),
+        email: document.getElementById('commentEmail').value.trim() || undefined,
+        message: document.getElementById('commentMessage').value.trim(),
+        projectId: currentProjectId,
+        projectTitle: currentProjectTitle
+      };
+      
+      try {
+        const response = await fetch('/api/guestbook', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(commentData)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to post comment');
+        }
+        
+        showNotification('💬 Comment posted successfully!', 'success');
+        closeCommentModal();
+        
+        // Track analytics
+        try {
+          await CosmicAPI.analytics.trackEvent({
+            eventType: 'project_comment',
+            eventName: 'Project Comment Posted',
+            metadata: {
+              projectId: currentProjectId,
+              projectTitle: currentProjectTitle
+            }
+          });
+        } catch (analyticsError) {
+          console.error('Analytics tracking error:', analyticsError);
+        }
+        
+      } catch (error) {
+        console.error('Error posting comment:', error);
+        showNotification('❌ Error: ' + (error.message || 'Failed to post comment'), 'error');
+      } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+    
+    // Close comment modal on backdrop click
+    document.getElementById('commentModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'commentModal' || e.target.classList.contains('modal')) {
+        closeCommentModal();
+      }
+    });
+    
+    // Search and filter
+    document.getElementById('searchInput').addEventListener('input', debounce(loadProjects, 500));
+    document.getElementById('categoryFilter').addEventListener('change', loadProjects);
+    document.getElementById('sortSelect').addEventListener('change', loadProjects);
+    
+    // Debounce helper
+    function debounce(func, wait) {
+      let timeout;
+      return function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, arguments), wait);
+      };
+    }
+    
+    // Initial load
+    loadProjects();
+    
+    // Auto-refresh when data changes in other tabs/windows
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'cds_portfolio_updated') {
+        console.log('Portfolio data updated in another tab, refreshing...');
+        loadProjects();
+      }
+    });
+    
+    // Broadcast update to other tabs when project is created/updated
+    function broadcastUpdate() {
+      localStorage.setItem('cds_portfolio_updated', Date.now().toString());
+      localStorage.removeItem('cds_portfolio_updated');
+    }
+    
+    // Call broadcast after successful create/update
+    const originalFormSubmit = document.getElementById('projectForm').onsubmit;
+    document.getElementById('projectForm').addEventListener('submit', async (e) => {
+      // Wait for the form to submit
+      setTimeout(() => {
+        broadcastUpdate();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

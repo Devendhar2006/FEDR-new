@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Registration</title>
+</head>
+<body>
+  <h1>Test Registration</h1>
+  <button id="testBtn" onclick="testRegister()">Test Registration</button>
+  <div id="result"></div>
+  
+  <script>
+    function testRegister() {
+      const btn = document.getElementById('testBtn');
+      const result = document.getElementById('result');
+      
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+      result.textContent = 'Processing...';
+      
+      setTimeout(() => {
+        // Store test data
+        const userData = {
+          name: 'Test User',
+          email: 'test@example.com',
+          password: 'Test@123',
+          registeredAt: new Date().toISOString()
+        };
+        
+        localStorage.setItem('demo_user', JSON.stringify(userData));
+        
+        console.log('✅ Registered:', userData);
+        result.innerHTML = '<strong style="color: green;">✅ Success!</strong><br>Email: ' + userData.email;
+        btn.disabled = false;
+        btn.textContent = 'Test Registration';
+        
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          alert('Would redirect to login.html now');
+        }, 2000);
+      }, 800);
+    }
+  </script>
+</body>
+</html>

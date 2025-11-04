@@ -7,7 +7,7 @@ const colors = require('../config/colors');
 // @access  Public
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -20,7 +20,7 @@ const register = async (req, res) => {
 
     // Create user
     const user = await User.create({
-      name,
+      username,
       email,
       password
     });

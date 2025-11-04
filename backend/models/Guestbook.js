@@ -25,6 +25,19 @@ const guestbookSchema = new mongoose.Schema({
     minlength: [10, 'Message must be at least 10 characters long']
   },
   
+  // Project Linking (NEW - for project-specific comments)
+  projectId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Portfolio',
+    default: null
+  },
+  
+  projectTitle: {
+    type: String,
+    trim: true,
+    maxlength: [200, 'Project title cannot exceed 200 characters']
+  },
+  
   // User Information (if logged in)
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -252,6 +265,7 @@ guestbookSchema.index({ featured: 1 });
 guestbookSchema.index({ likes: -1 });
 guestbookSchema.index({ isSpam: 1 });
 guestbookSchema.index({ ipAddress: 1 });
+guestbookSchema.index({ projectId: 1 }); // NEW: Index for project filtering
 
 // Text index for search functionality
 guestbookSchema.index({
@@ -360,9 +374,19 @@ guestbookSchema.methods.flagMessage = function(userId, reason, description) {
 };
 
 // Static method to get approved messages
-guestbookSchema.statics.getApproved = function(limit = 20, skip = 0) {
-  return this.find({ status: 'approved', isSpam: false })
+guestbookSchema.statics.getApproved = function(limit = 20, skip = 0, filter = 'all') {
+  const query = { status: 'approved', isSpam: false };
+  
+  // Add filter for project comments
+  if (filter === 'project-comments') {
+    query.projectId = { $ne: null };
+  } else if (filter === 'general') {
+    query.projectId = null;
+  }
+  
+  return this.find(query)
     .populate('user', 'username profile.avatar')
+    .populate('projectId', 'title')
     .sort({ featured: -1, createdAt: -1 })
     .limit(limit)
     .skip(skip);

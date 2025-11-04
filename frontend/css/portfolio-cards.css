@@ -1,0 +1,215 @@
+/* ==========================================================================
+   PORTFOLIO ITEM CARDS - COSMIC THEME
+   Styling for portfolio item cards with view details buttons
+   ========================================================================== */
+
+.portfolio-item-card {
+  background: rgba(15, 27, 60, 0.6);
+  border: 1px solid rgba(43, 196, 250, 0.3);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.portfolio-item-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(43, 196, 250, 0.6);
+  box-shadow: 0 15px 40px rgba(43, 196, 250, 0.4);
+}
+
+.portfolio-card-image {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(150, 90, 255, 0.2), rgba(43, 196, 250, 0.2));
+}
+
+.portfolio-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.portfolio-item-card:hover .portfolio-card-image img {
+  transform: scale(1.15);
+}
+
+.portfolio-card-type-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border: 2px solid rgba(43, 196, 250, 0.5);
+  box-shadow: 0 0 20px rgba(43, 196, 250, 0.3);
+  z-index: 2;
+}
+
+.portfolio-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.portfolio-item-card:hover .portfolio-card-overlay {
+  opacity: 1;
+}
+
+.btn-view-details {
+  background: linear-gradient(135deg, #2bc4fa, #a855f7);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(168, 85, 247, 0.5);
+}
+
+.btn-view-details:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.8);
+}
+
+.portfolio-card-content {
+  padding: 20px;
+}
+
+.portfolio-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.item-type-badge {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.portfolio-card-title {
+  color: #fde68a;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin: 0;
+  flex: 1;
+  text-shadow: 0 0 10px rgba(253, 230, 138, 0.3);
+}
+
+.portfolio-card-org,
+.portfolio-card-date {
+  color: #2bc4fa;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+}
+
+.portfolio-card-description {
+  color: #ccc;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 12px 0;
+  min-height: 50px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.portfolio-card-metrics {
+  display: flex;
+  gap: 15px;
+  margin: 12px 0;
+  padding: 10px 0;
+  border-top: 1px solid rgba(43, 196, 250, 0.2);
+  border-bottom: 1px solid rgba(43, 196, 250, 0.2);
+}
+
+.metric-item {
+  color: #aaa;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.portfolio-card-category {
+  display: inline-block;
+  background: rgba(43, 196, 250, 0.2);
+  border: 1px solid rgba(43, 196, 250, 0.4);
+  color: #2bc4fa;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.portfolio-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-view-details-inline {
+  background: transparent;
+  border: 2px solid rgba(43, 196, 250, 0.5);
+  color: #2bc4fa;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.btn-view-details-inline:hover {
+  background: rgba(43, 196, 250, 0.2);
+  border-color: #2bc4fa;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(43, 196, 250, 0.3);
+}
+
+/* Responsive Grid */
+#portfolioGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  padding: 20px 0;
+}
+
+@media (max-width: 768px) {
+  #portfolioGallery {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .portfolio-card-image {
+    height: 200px;
+  }
+}
+

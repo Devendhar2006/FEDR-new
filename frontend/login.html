@@ -1,63 +1,265 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cosmic DevSpace • Sign In</title>
-  <link rel="stylesheet" href="./css/styles.css" />
-</head><body>
-  <header class="site-header">
-    <div class="logo">🚀 Cosmic DevSpace</div>
-    <nav class="nav">
-      <a href="index.html">Home</a>
-      <a href="portfolio.html">Portfolio</a>
-      <a href="projects.html">Projects</a>
-      <a href="blog.html">Blog</a>
-      <a href="guestbook.html">Guestbook</a>
-      <a href="analytics.html">Analytics</a>
-      <a href="contact.html">Contact</a>
-      <span class="auth-links">
-        <a href="login.html" id="loginLink" class="active">Sign In</a>
-        <a href="register.html" id="registerLink" class="btn-primary">Register</a>
-        <button id="logoutBtn" class="btn-secondary" hidden>Logout</button>
-      </span>
-    </nav>
-  </header>
-  <main class="container">
-    <section class="auth-card">
-      <h1>🔐 Sign In</h1>
-      <form id="loginForm" class="form">
-        <div class="row">
-          <label>Email
-            <input type="email" id="email" required />
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - Cosmic DevSpace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/navbar.css">
+  <link rel="stylesheet" href="./css/auth.css">
+</head>
+<body class="auth-page login-page">
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <a href="index.html">🚀 Cosmic DevSpace</a>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+      <li><a href="projects.html" class="nav-link">Projects</a></li>
+      <li><a href="blog.html" class="nav-link">Blog</a></li>
+      <li><a href="guestbook.html" class="nav-link">Guestbook</a></li>
+      <li><a href="analytics.html" class="nav-link">Analytics</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+    <div class="navbar-auth" id="authLoggedOut">
+      <a href="login.html" class="nav-link">Sign In</a>
+      <a href="register.html" class="btn-register">Register</a>
+    </div>
+    <div class="navbar-user" id="authLoggedIn" style="display: none;">
+      <span class="user-greeting">Hi, <span id="userName">User</span></span>
+      <div class="user-menu">
+        <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
+        <div class="dropdown-menu">
+          <a href="profile.html">👤 Profile</a>
+          <a href="admin.html" id="adminLink" style="display: none;">⚙️ Admin</a>
+          <a href="settings.html">⚙️ Settings</a>
+          <a href="#" id="logoutBtn">🚪 Logout</a>
+        </div>
+      </div>
+    </div>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
+
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+
+  <section class="auth-hero">
+    <div class="hero-content">
+      <span class="hero-kicker">Sign In</span>
+      <h1 class="hero-title">Welcome Back to the Cosmos!</h1>
+      <p class="hero-subtitle">Sign in to continue your epic journey through the digital universe.</p>
+    </div>
+  </section>
+
+  <main class="auth-container">
+    <div class="auth-card">
+      <div class="auth-alert info" id="infoMessage" style="display: none;">
+        <span class="alert-icon">ℹ️</span>
+        <div>
+          <strong>First time here?</strong> Please register an account first.
+        </div>
+      </div>
+
+      <div class="error-message" id="errorMessage"></div>
+      <div class="success-message" id="successMessage"></div>
+
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="email">Email<span class="required">*</span></label>
+          <input type="email" id="email" name="email" placeholder="john@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password<span class="required">*</span></label>
+          <div class="password-field">
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
+            <button type="button" class="password-toggle" onclick="togglePassword('password')" aria-label="Toggle password visibility">👁️</button>
+          </div>
+        </div>
+
+        <div class="remember-row">
+          <label>
+            <input type="checkbox" id="rememberMe" name="rememberMe">
+            Remember me
           </label>
+          <a href="#" onclick="alert('Password reset coming soon!'); return false;">Forgot password?</a>
         </div>
-        <div class="row">
-          <label>Password
-            <input type="password" id="password" required />
-          </label>
-        </div>
-        <div class="row">
-          <button type="submit" class="btn-gradient">Login</button>
-        </div>
-        <p class="muted">No account? <a href="register.html">Register</a></p>
+
+        <button type="submit" id="submitBtn">
+          <span>Sign In</span>
+        </button>
       </form>
-    </section>
+
+      <div class="auth-divider">
+        <span>OR</span>
+      </div>
+
+      <button type="button" class="google-btn" id="googleSignInBtn">
+        <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        <span>Sign in with Google</span>
+      </button>
+
+      <div class="auth-links">
+        <span>Don't have an account? <a href="register.html">Create one now!</a></span>
+        <a href="index.html">← Back to Home</a>
+      </div>
+    </div>
   </main>
-  <footer class="site-footer">© <span id="year"></span> Cosmic DevSpace</footer>
+
+  <footer class="site-footer auth-footer">
+    © 2025 Cosmic DevSpace • Crafted with 🌌
+  </footer>
+
+  <script src="./js/api-client.js"></script>
   <script src="./js/app.js"></script>
   <script>
-    const form = document.getElementById('loginForm');
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const acct = Account.get();
-      const email = document.getElementById('email').value.trim();
-      const pass = document.getElementById('password').value;
-      if (!acct || acct.email !== email || acct.password !== pass) {
-        alert('Invalid credentials. Tip: register first.');
-        return;
+    function togglePassword(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const demoUser = localStorage.getItem('demo_user');
+      const infoMessage = document.getElementById('infoMessage');
+
+      if (!demoUser) {
+        infoMessage.style.display = 'flex';
+        console.log('⚠️ No registered user found. User should register first.');
+      } else {
+        infoMessage.style.display = 'none';
+        const user = JSON.parse(demoUser);
+        console.log('ℹ️ Registered user found:', user.email);
       }
-      Auth.set({ name: acct.name, email: acct.email });
-      location.href = 'profile.html';
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const errorMsg = document.getElementById('errorMessage');
+      const successMsg = document.getElementById('successMessage');
+      const submitBtn = document.getElementById('submitBtn');
+
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+      document.getElementById('infoMessage').style.display = 'none';
+
+      const emailValue = document.getElementById('email').value.trim();
+      const formData = {
+        identifier: emailValue,  // Backend expects 'identifier' field
+        password: document.getElementById('password').value,
+        rememberMe: document.getElementById('rememberMe').checked
+      };
+
+      console.log('📝 Login attempt with email:', emailValue);
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Signing in...</span>';
+
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        if (typeof CosmicAPI !== 'undefined' && CosmicAPI.auth && CosmicAPI.auth.login) {
+          console.log('Using real API for login...');
+          try {
+            const response = await CosmicAPI.auth.login(formData);
+
+            if (response.success) {
+              successMsg.textContent = response.message || 'Login successful!';
+              successMsg.style.display = 'block';
+              setTimeout(() => window.location.href = 'index.html', 1000);
+            } else {
+              throw new Error(response.message || 'Login failed');
+            }
+          } catch (apiError) {
+            console.log('API not available, falling back to demo mode...');
+          }
+        }
+
+        if (!successMsg.style.display || successMsg.style.display === 'none') {
+          console.log('Demo mode - checking localStorage...');
+          const demoUser = localStorage.getItem('demo_user');
+
+          console.log('Demo user data:', demoUser);
+
+          if (demoUser) {
+            const user = JSON.parse(demoUser);
+            console.log('👤 Stored user email:', user.email);
+            console.log('📧 Login email:', formData.email);
+
+            const storedEmail = user.email.toLowerCase().trim();
+            const loginEmail = emailValue.toLowerCase().trim();
+
+            if (storedEmail === loginEmail) {
+              if (user.password && user.password !== formData.password) {
+                console.error('❌ Password mismatch!');
+                throw new Error('❌ Invalid password. Please check your password.');
+              }
+
+              console.log('✅ Email and password match!');
+
+              successMsg.innerHTML = `
+                <strong>✅ Login Successful!</strong><br>
+                <small style="display: block; margin-top: 8px;">Welcome back, ${user.name}!</small>
+                <small style="display: block; margin-top: 4px;">🔄 Redirecting to dashboard...</small>
+              `;
+              successMsg.style.display = 'block';
+
+              localStorage.setItem('cds_user', JSON.stringify({
+                name: user.name,
+                email: user.email,
+                isDemo: true
+              }));
+
+              console.log('🎉 Login successful! Session created.');
+
+              if (typeof updateAuthState === 'function') {
+                updateAuthState();
+              }
+
+              setTimeout(() => {
+                console.log('🔄 Redirecting to home page...');
+                window.location.href = 'index.html';
+              }, 1500);
+            } else {
+              console.error('❌ Email mismatch!');
+              throw new Error('❌ Invalid email. Please check your email address.');
+            }
+          } else {
+            console.error('No demo user found in localStorage');
+            throw new Error('❌ No account found. Please register first or check if you\'re using the same browser.');
+          }
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        errorMsg.textContent = error.message || 'Login failed. Please try again.';
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Sign In</span>';
+      }
+    });
+
+    // Google Sign-In button handler
+    document.getElementById('googleSignInBtn').addEventListener('click', () => {
+      console.log('🔐 Initiating Google OAuth...');
+      // Redirect to backend Google OAuth endpoint
+      window.location.href = '/api/auth/google';
     });
   </script>
-</body></html>
+  <script src="./js/navbar.js"></script>
+</body>
+</html>

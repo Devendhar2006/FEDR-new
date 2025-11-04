@@ -1,14 +1,38 @@
-// Portfolio page interactions: modal open/close, drag&drop uploads, preview, form submit, edit/delete controls.
-(function(){
-  const $ = (sel, ctx=document) => ctx.querySelector(sel);
-  const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+/**
+ * COSMIC DEVSPACE - PORTFOLIO PAGE
+ * Comprehensive portfolio functionality with filters, search, animations
+ */
 
+(function() {
+  'use strict';
+  
+  // Selectors
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+  // Application State
   const state = {
-    images: [], // {file, url}
+    portfolioItems: [],
+    filteredItems: [],
+    currentView: 'grid',
+    currentPage: 1,
+    itemsPerPage: 12,
+    currentTypeFilter: 'all', // 'all', 'project', 'certification', 'achievement'
+    filters: {
+      category: '',
+      search: '',
+      sort: 'newest'
+    },
+    uploadedImage: null,
+    techStack: [],
     editingId: null
   };
 
-  function toast(msg, type='info') {
+  // ==========================================================================
+  // UTILITY FUNCTIONS
+  // ==========================================================================
+  
+  function toast(msg, type = 'info') {
     let t = $('.toast');
     if (!t) {
       t = document.createElement('div');
@@ -16,14 +40,371 @@
       document.body.appendChild(t);
     }
     t.textContent = msg;
-    t.classList.add('show');
-    if (type === 'error') t.style.borderColor = 'rgba(255,100,140,.5)';
-    if (type === 'success') t.style.borderColor = 'rgba(120,255,180,.5)';
-    setTimeout(()=>{ t.classList.remove('show'); t.style.borderColor='rgba(225,215,243,.26)'; }, 2200);
+    t.className = `toast ${type} show`;
+    setTimeout(() => {
+      t.classList.remove('show');
+    }, 3000);
+  }
+  
+  function authUser() {
+    try {
+      return JSON.parse(localStorage.getItem('cds_user') || 'null');
+    } catch {
+      return null;
+    }
+  }
+  
+  function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+  }
+  
+  function showLoading(show = true) {
+    const spinner = $('#loadingSpinner');
+    if (spinner) {
+      spinner.classList.toggle('hidden', !show);
+    }
+  }
+  
+  function showEmptyState(show = true) {
+    const empty = $('#emptyState');
+    if (empty) {
+      empty.classList.toggle('hidden', !show);
+    }
   }
 
-  function authUser() {
-    try { return JSON.parse(localStorage.getItem('cds_user')||'null'); } catch { return null; }
+  // ==========================================================================
+  // API FUNCTIONS
+  // ==========================================================================
+  
+  async function fetchPortfolioItems() {
+    showLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (state.filters.category) params.append('category', state.filters.category);
+      if (state.filters.search) params.append('search', state.filters.search);
+      // Map frontend sort values to backend format
+      const sortMap = {
+        'newest': 'newest',
+        'oldest': 'oldest',
+        'views': 'views',
+        'likes': 'likes',
+        'az': 'az',
+        'za': 'za',
+        'trending': 'trending'
+      };
+      const sortValue = sortMap[state.filters.sort] || 'newest';
+      params.append('sort', sortValue);
+      params.append('page', state.currentPage);
+      params.append('limit', state.itemsPerPage);
+      
+      const response = await fetch(`/api/portfolio?${params}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        // Handle both response formats: { data: { projects: [...] } } or { data: [...] }
+        const items = data.data?.projects || data.data || data.items || [];
+        console.log('✅ Fetched portfolio items:', items.length);
+        console.log('Items:', items.map(item => ({ 
+          id: item._id, 
+          title: item.title, 
+          type: item.itemType, 
+          visibility: item.visibility,
+          status: item.status,
+          category: item.category 
+        })));
+        state.portfolioItems = items;
+        applyFilters();
+        renderPortfolio();
+        updateStats();
+        updateTypeCounts();
+      } else {
+        console.error('❌ API returned error:', data);
+        toast(data.message || 'Failed to load portfolio items', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching portfolio:', error);
+      toast('Failed to load portfolio items', 'error');
+    } finally {
+      showLoading(false);
+    }
+  }
+  
+  function renderPortfolio() {
+    const gallery = $('#portfolioGallery');
+    if (!gallery) return;
+    
+    gallery.innerHTML = '';
+    
+    if (state.filteredItems.length === 0) {
+      showEmptyState(true);
+      return;
+    }
+    
+    showEmptyState(false);
+    
+    // Group items by type for better organization
+    const itemsByType = {
+      project: [],
+      certification: [],
+      achievement: []
+    };
+    
+    state.filteredItems.forEach(item => {
+      const itemType = item.itemType || 'project';
+      if (itemsByType[itemType]) {
+        itemsByType[itemType].push(item);
+      } else {
+        itemsByType.project.push(item);
+      }
+    });
+    
+    // Render all items with smooth animations
+    let delay = 0;
+    state.filteredItems.forEach((item, index) => {
+      const card = createPortfolioCard(item);
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(20px)';
+      card.style.transition = `all 0.4s ease ${delay}s`;
+      gallery.appendChild(card);
+      
+      // Animate in
+      setTimeout(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, 50 + delay * 100);
+      
+      delay += 0.05;
+    });
+  }
+  
+  function createPortfolioCard(item) {
+    const card = document.createElement('div');
+    card.className = 'portfolio-item-card';
+    card.dataset.itemType = item.itemType || 'project';
+    card.dataset.itemId = item._id;
+    
+    const itemType = item.itemType || 'project';
+    const itemIcon = itemType === 'certification' ? '🎓' : itemType === 'achievement' ? '🏆' : '📝';
+    const imageUrl = item.images?.[0]?.url || item.thumbnail || item.certification?.badgeUrl || 'https://via.placeholder.com/400x300/965aff/ffffff?text=' + encodeURIComponent(item.title);
+    
+    // Get organization/category info
+    let orgInfo = '';
+    if (itemType === 'certification' && item.certification?.issuingOrganization) {
+      orgInfo = `<div class="portfolio-card-org">🏢 ${escapeHtml(item.certification.issuingOrganization)}</div>`;
+    } else if (itemType === 'achievement' && item.achievement?.organization) {
+      orgInfo = `<div class="portfolio-card-org">🏢 ${escapeHtml(item.achievement.organization)}</div>`;
+    } else if (item.category) {
+      orgInfo = `<div class="portfolio-card-org">🏷️ ${escapeHtml(item.category)}</div>`;
+    }
+    
+    // Get date info
+    let dateInfo = '';
+    if (itemType === 'certification' && item.certification?.issueDate) {
+      const date = new Date(item.certification.issueDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      dateInfo = `<div class="portfolio-card-date">📅 ${date}</div>`;
+    } else if (itemType === 'achievement' && item.achievement?.achievementDate) {
+      const date = new Date(item.achievement.achievementDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      dateInfo = `<div class="portfolio-card-date">📅 ${date}</div>`;
+    }
+    
+    // Get metrics
+    const views = item.metrics?.views || 0;
+    const likes = item.metrics?.likes || item.likedBy?.length || 0;
+    
+    card.innerHTML = `
+      <div class="portfolio-card-image">
+        <img src="${imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300/965aff/ffffff?text=${encodeURIComponent(item.title)}'">
+        <div class="portfolio-card-overlay">
+          <button class="btn-view-details" onclick="event.stopPropagation(); openItemDetail('${item._id}')">
+            👁️ View Details & Comments
+          </button>
+        </div>
+        <div class="portfolio-card-type-badge">${itemIcon}</div>
+      </div>
+      <div class="portfolio-card-content">
+        <div class="portfolio-card-header">
+          <h3 class="portfolio-card-title">${escapeHtml(item.title)}</h3>
+        </div>
+        ${orgInfo}
+        ${dateInfo}
+        <p class="portfolio-card-description">${escapeHtml((item.shortDescription || item.description || '').substring(0, 100))}${(item.description || '').length > 100 ? '...' : ''}</p>
+        <div class="portfolio-card-metrics">
+          <span class="metric-item">👁️ ${formatNumber(views)}</span>
+          <span class="metric-item">❤️ ${formatNumber(likes)}</span>
+        </div>
+        <div class="portfolio-card-actions">
+          <button class="btn-view-details-inline" onclick="event.stopPropagation(); openItemDetail('${item._id}')">
+            💬 View & Comment
+          </button>
+        </div>
+      </div>
+    `;
+    
+    // Add click handler to entire card
+    card.addEventListener('click', () => {
+      openItemDetail(item._id);
+    });
+    
+    return card;
+  }
+  
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  // Filter by type
+  function filterByType(type) {
+    state.currentTypeFilter = type;
+    
+    // Update active tab
+    document.querySelectorAll('.type-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.type === type);
+    });
+    
+    applyFilters();
+    renderPortfolio();
+  }
+  
+  // Apply all filters
+  function applyFilters() {
+    let filtered = [...state.portfolioItems];
+    
+    // Filter by type
+    if (state.currentTypeFilter !== 'all') {
+      filtered = filtered.filter(item => (item.itemType || 'project') === state.currentTypeFilter);
+    }
+    
+    // Filter by category
+    if (state.filters.category) {
+      filtered = filtered.filter(item => item.category === state.filters.category);
+    }
+    
+    // Filter by search
+    if (state.filters.search) {
+      const searchLower = state.filters.search.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.title.toLowerCase().includes(searchLower) ||
+        (item.description || '').toLowerCase().includes(searchLower) ||
+        (item.shortDescription || '').toLowerCase().includes(searchLower) ||
+        (item.tags || []).some(tag => tag.toLowerCase().includes(searchLower)) ||
+        (item.technologies || []).some(tech => (tech.name || tech).toLowerCase().includes(searchLower))
+      );
+    }
+    
+    // Sort
+    const sort = state.filters.sort;
+    if (sort === 'newest') {
+      filtered.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    } else if (sort === 'oldest') {
+      filtered.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+    } else if (sort === 'views') {
+      filtered.sort((a, b) => (b.metrics?.views || 0) - (a.metrics?.views || 0));
+    } else if (sort === 'likes') {
+      filtered.sort((a, b) => (b.metrics?.likes || b.likedBy?.length || 0) - (a.metrics?.likes || a.likedBy?.length || 0));
+    } else if (sort === 'az') {
+      filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    } else if (sort === 'za') {
+      filtered.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+    }
+    
+    state.filteredItems = filtered;
+  }
+  
+  // Update stats (total works, views, likes, categories)
+  function updateStats() {
+    const items = state.portfolioItems || [];
+    
+    // Calculate totals
+    const totalWorks = items.length;
+    const totalViews = items.reduce((sum, item) => sum + (item.metrics?.views || 0), 0);
+    const totalLikes = items.reduce((sum, item) => sum + (item.metrics?.likes || item.likedBy?.length || 0), 0);
+    const categories = new Set(items.map(item => item.category).filter(Boolean));
+    const totalCategories = categories.size;
+    
+    // Update DOM elements directly by ID
+    const totalWorksEl = $('#totalWorks');
+    const totalViewsEl = $('#totalViews');
+    const totalLikesEl = $('#totalLikes');
+    const totalCategoriesEl = $('#totalCategories');
+    
+    if (totalWorksEl) {
+      totalWorksEl.textContent = formatNumber(totalWorks);
+    }
+    
+    if (totalViewsEl) {
+      totalViewsEl.textContent = formatNumber(totalViews);
+    }
+    
+    if (totalLikesEl) {
+      totalLikesEl.textContent = formatNumber(totalLikes);
+    }
+    
+    if (totalCategoriesEl) {
+      totalCategoriesEl.textContent = formatNumber(totalCategories);
+    }
+  }
+  
+  // Update type counts
+  function updateTypeCounts() {
+    const counts = {
+      all: state.portfolioItems.length,
+      project: state.portfolioItems.filter(item => !item.itemType || item.itemType === 'project').length,
+      certification: state.portfolioItems.filter(item => item.itemType === 'certification').length,
+      achievement: state.portfolioItems.filter(item => item.itemType === 'achievement').length
+    };
+    
+    const countAll = $('#countAll');
+    const countProjects = $('#countProjects');
+    const countCertifications = $('#countCertifications');
+    const countAchievements = $('#countAchievements');
+    
+    if (countAll) countAll.textContent = counts.all;
+    if (countProjects) countProjects.textContent = counts.project;
+    if (countCertifications) countCertifications.textContent = counts.certification;
+    if (countAchievements) countAchievements.textContent = counts.achievement;
+  }
+  
+  // Make functions globally available
+  window.filterByType = filterByType;
+  window.fetchPortfolioItems = fetchPortfolioItems;
+  window.updateStats = updateStats;
+  window.updateTypeCounts = updateTypeCounts;
+  
+  async function likePortfolio(id) {
+    const user = authUser();
+    if (!user) {
+      toast('Please sign in to like projects', 'error');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/portfolio/${id}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update local state
+        const item = state.portfolioItems.find(i => i._id === id);
+        if (item) {
+          item.liked = data.liked;
+          item.likes = data.likes;
+        }
+        renderPortfolio();
+        updateStats();
+      }
+    } catch (error) {
+      console.error('Error liking portfolio:', error);
+      toast('Failed to like project', 'error');
+    }
   }
 
   function toggleModal(open) {
@@ -231,6 +612,48 @@
     }));
 
     wireExistingTiles();
+    
+    // Setup filter handlers
+    const categoryFilter = $('#categoryFilter');
+    const searchInput = $('#searchInput');
+    const sortSelect = $('#sortSelect');
+    
+    if (categoryFilter) {
+      categoryFilter.addEventListener('change', (e) => {
+        state.filters.category = e.target.value;
+        applyFilters();
+        renderPortfolio();
+      });
+    }
+    
+    if (searchInput) {
+      let searchTimeout;
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          state.filters.search = e.target.value;
+          applyFilters();
+          renderPortfolio();
+          
+          // Update search count
+          const countEl = $('#searchCount');
+          if (countEl) {
+            countEl.textContent = state.filteredItems.length > 0 ? `${state.filteredItems.length} found` : '';
+          }
+        }, 300);
+      });
+    }
+    
+    if (sortSelect) {
+      sortSelect.addEventListener('change', (e) => {
+        state.filters.sort = e.target.value;
+        applyFilters();
+        renderPortfolio();
+      });
+    }
+    
+    // Load portfolio items on page load
+    fetchPortfolioItems();
   }
 
   document.addEventListener('DOMContentLoaded', init);

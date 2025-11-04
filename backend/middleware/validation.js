@@ -298,7 +298,12 @@ const validatePagination = [
   
   query('sort')
     .optional()
-    .isIn(['createdAt', '-createdAt', 'updatedAt', '-updatedAt', 'views', '-views', 'likes', '-likes'])
+    .isIn([
+      // MongoDB sort formats
+      'createdAt', '-createdAt', 'updatedAt', '-updatedAt', 'views', '-views', 'likes', '-likes',
+      // Frontend-friendly formats
+      'newest', 'oldest', 'az', 'za', 'views', 'likes', 'trending'
+    ])
     .withMessage('Invalid sort parameter'),
   
   handleValidationErrors
