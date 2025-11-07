@@ -51,8 +51,8 @@ const portfolioSchema = new mongoose.Schema({
   images: [{
     url: {
       type: String,
-      required: true,
-      match: [/^https?:\/\/.+/, 'Please provide a valid image URL']
+      required: false
+      // Removed URL validation to allow data URLs (base64) for now
     },
     caption: {
       type: String,

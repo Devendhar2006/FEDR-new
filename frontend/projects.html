@@ -161,6 +161,15 @@
           </button>
         </div>
 
+        <!-- My Projects Toggle (for authenticated users) -->
+        <div class="control-group my-projects-toggle" id="myProjectsToggle" style="display: none;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="showMyProjectsOnly" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <label for="showMyProjectsOnly" class="toggle-label">My Projects Only</label>
+        </div>
+
         <!-- Add Project Button -->
         <button class="btn-gradient add-project-btn" id="addProjectBtn">+ Create Project</button>
       </div>
@@ -315,11 +324,11 @@
     &copy; <span id="year"></span> Cosmic DevSpace. All rights reserved.
   </footer>
 
-  <script src="./js/app.js"></script>
-  <script src="./js/projects.js"></script>
+  <script src="./js/app.js?v=2025110702"></script>
+  <script src="./js/projects.js?v=2025110702"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
-  <script src="./js/navbar.js"></script>
+  <script src="./js/navbar.js?v=2025110702"></script>
 </body>
 </html>

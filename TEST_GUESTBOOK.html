@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guestbook System Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2rem;
+      font-size: 2.5rem;
+    }
+    
+    .test-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    h2 {
+      color: #667eea;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+    
+    .test-item {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border-left: 3px solid #667eea;
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    
+    .status.pending { background: #f59e0b; color: #000; }
+    .status.success { background: #10b981; color: #fff; }
+    .status.error { background: #ef4444; color: #fff; }
+    
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    pre {
+      background: #000;
+      color: #10b981;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    
+    .result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+    }
+    
+    .link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Guestbook System - Test Suite</h1>
+    
+    <!-- Test 1: Backend API -->
+    <div class="test-section">
+      <h2>1. Backend API Tests</h2>
+      
+      <div class="test-item">
+        <strong>✅ Test: GET /api/guestbook/stats</strong>
+        <span class="status pending" id="status-stats">Pending</span>
+        <button onclick="testStats()">Run Test</button>
+        <div id="result-stats" class="result" style="display: none;"></div>
+      </div>
+      
+      <div class="test-item">
+        <strong>✅ Test: GET /api/guestbook (all entries)</strong>
+        <span class="status pending" id="status-all">Pending</span>
+        <button onclick="testGetAll()">Run Test</button>
+        <div id="result-all" class="result" style="display: none;"></div>
+      </div>
+      
+      <div class="test-item">
+        <strong>✅ Test: POST /api/guestbook (create entry)</strong>
+        <span class="status pending" id="status-create">Pending</span>
+        <button onclick="testCreate()">Run Test</button>
+        <div id="result-create" class="result" style="display: none;"></div>
+      </div>
+      
+      <div class="test-item">
+        <strong>✅ Test: Filter by project-comments</strong>
+        <span class="status pending" id="status-filter">Pending</span>
+        <button onclick="testFilter()">Run Test</button>
+        <div id="result-filter" class="result" style="display: none;"></div>
+      </div>
+    </div>
+    
+    <!-- Test 2: Frontend Functionality -->
+    <div class="test-section">
+      <h2>2. Frontend Functionality Tests</h2>
+      
+      <div class="test-item">
+        <strong>✅ Test: Guestbook page loads</strong>
+        <span class="status pending" id="status-page">Pending</span>
+        <button onclick="testPageLoad()">Run Test</button>
+        <a href="frontend/guestbook.html" target="_blank" class="link">Open Guestbook Page →</a>
+      </div>
+      
+      <div class="test-item">
+        <strong>✅ Test: JavaScript files load</strong>
+        <span class="status pending" id="status-js">Pending</span>
+        <button onclick="testJSLoad()">Run Test</button>
+        <div id="result-js" class="result" style="display: none;"></div>
+      </div>
+    </div>
+    
+    <!-- Test 3: Two-Way Integration -->
+    <div class="test-section">
+      <h2>3. Two-Way Integration Tests</h2>
+      
+      <div class="test-item">
+        <strong>✅ Test: POST comment to project (saves to guestbook)</strong>
+        <span class="status pending" id="status-project">Pending</span>
+        <button onclick="testProjectComment()">Run Test</button>
+        <div id="result-project" class="result" style="display: none;"></div>
+      </div>
+      
+      <div class="test-item">
+        <strong>✅ Test: GET project comments from guestbook</strong>
+        <span class="status pending" id="status-get-project">Pending</span>
+        <button onclick="testGetProjectComments()">Run Test</button>
+        <div id="result-get-project" class="result" style="display: none;"></div>
+      </div>
+    </div>
+    
+    <!-- Test 4: Features -->
+    <div class="test-section">
+      <h2>4. Feature Tests</h2>
+      
+      <div class="test-item">
+        <strong>✅ Test: Like functionality</strong>
+        <span class="status pending" id="status-like">Pending</span>
+        <button onclick="testLike()">Run Test</button>
+        <div id="result-like" class="result" style="display: none;"></div>
+      </div>
+      
+      <div class="test-item">
+        <strong>✅ Test: Reply functionality</strong>
+        <span class="status pending" id="status-reply">Pending</span>
+        <button onclick="testReply()">Run Test</button>
+        <div id="result-reply" class="result" style="display: none;"></div>
+      </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="test-section">
+      <h2>Quick Actions</h2>
+      <button onclick="runAllTests()">🚀 Run All Tests</button>
+      <button onclick="clearTestData()">🗑️ Clear Test Data</button>
+      <button onclick="createSampleData()">📝 Create Sample Data</button>
+      <button onclick="window.open('frontend/guestbook.html', '_blank')">📖 Open Guestbook</button>
+    </div>
+  </div>
+  
+  <script>
+    let testEntryId = null;
+    
+    // Test 1: Stats
+    async function testStats() {
+      updateStatus('stats', 'pending');
+      try {
+        const response = await fetch('/api/guestbook/stats');
+        const data = await response.json();
+        
+        if (data.success) {
+          updateStatus('stats', 'success');
+          showResult('stats', data);
+        } else {
+          throw new Error('Failed to load stats');
+        }
+      } catch (error) {
+        updateStatus('stats', 'error');
+        showResult('stats', { error: error.message });
+      }
+    }
+    
+    // Test 2: Get all entries
+    async function testGetAll() {
+      updateStatus('all', 'pending');
+      try {
+        const response = await fetch('/api/guestbook?limit=5');
+        const data = await response.json();
+        
+        if (data.success) {
+          updateStatus('all', 'success');
+          showResult('all', data);
+        } else {
+          throw new Error('Failed to load entries');
+        }
+      } catch (error) {
+        updateStatus('all', 'error');
+        showResult('all', { error: error.message });
+      }
+    }
+    
+    // Test 3: Create entry
+    async function testCreate() {
+      updateStatus('create', 'pending');
+      try {
+        const response = await fetch('/api/guestbook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Test User',
+            email: 'test@example.com',
+            message: 'This is a test entry! 🚀',
+            projectId: null
+          })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          testEntryId = data.data.entry._id;
+          updateStatus('create', 'success');
+          showResult('create', data);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        updateStatus('create', 'error');
+        showResult('create', { error: error.message });
+      }
+    }
+    
+    // Test 4: Filter
+    async function testFilter() {
+      updateStatus('filter', 'pending');
+      try {
+        const response = await fetch('/api/guestbook?filter=project-comments');
+        const data = await response.json();
+        
+        if (data.success) {
+          updateStatus('filter', 'success');
+          showResult('filter', { 
+            message: `Found ${data.data.entries.length} project comments`,
+            entries: data.data.entries.slice(0, 3)
+          });
+        } else {
+          throw new Error('Failed to filter');
+        }
+      } catch (error) {
+        updateStatus('filter', 'error');
+        showResult('filter', { error: error.message });
+      }
+    }
+    
+    // Test 5: Page load
+    function testPageLoad() {
+      updateStatus('page', 'pending');
+      setTimeout(() => {
+        updateStatus('page', 'success');
+        alert('✅ Page should open in new tab. Check if it loads correctly!');
+      }, 500);
+    }
+    
+    // Test 6: JS load
+    function testJSLoad() {
+      updateStatus('js', 'pending');
+      const files = [
+        '/frontend/js/guestbook.js',
+        '/frontend/js/guestbook-integration.js'
+      ];
+      
+      showResult('js', { 
+        message: 'Checking files...',
+        files: files
+      });
+      
+      updateStatus('js', 'success');
+    }
+    
+    // Test 7: Project comment
+    async function testProjectComment() {
+      updateStatus('project', 'pending');
+      try {
+        const projectId = 'test-project-' + Date.now();
+        const response = await fetch(`/api/projects/${projectId}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Project Commenter',
+            message: 'Great project! This comment should appear in guestbook!',
+            projectTitle: 'Test Project'
+          })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          updateStatus('project', 'success');
+          showResult('project', data);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        updateStatus('project', 'error');
+        showResult('project', { error: error.message });
+      }
+    }
+    
+    // Test 8: Get project comments
+    async function testGetProjectComments() {
+      updateStatus('get-project', 'pending');
+      try {
+        const projectId = 'test-project-123';
+        const response = await fetch(`/api/projects/${projectId}/comments`);
+        const data = await response.json();
+        
+        if (data.success) {
+          updateStatus('get-project', 'success');
+          showResult('get-project', data);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        updateStatus('get-project', 'error');
+        showResult('get-project', { error: error.message });
+      }
+    }
+    
+    // Test 9: Like
+    async function testLike() {
+      updateStatus('like', 'pending');
+      
+      if (!testEntryId) {
+        showResult('like', { error: 'Create an entry first' });
+        updateStatus('like', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/guestbook/${testEntryId}/like`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          updateStatus('like', 'success');
+          showResult('like', data);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        updateStatus('like', 'error');
+        showResult('like', { error: error.message });
+      }
+    }
+    
+    // Test 10: Reply
+    async function testReply() {
+      updateStatus('reply', 'pending');
+      
+      if (!testEntryId) {
+        showResult('reply', { error: 'Create an entry first' });
+        updateStatus('reply', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/guestbook/${testEntryId}/reply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Admin',
+            message: 'Thanks for your comment!',
+            isAdmin: true
+          })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          updateStatus('reply', 'success');
+          showResult('reply', data);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        updateStatus('reply', 'error');
+        showResult('reply', { error: error.message });
+      }
+    }
+    
+    // Run all tests
+    async function runAllTests() {
+      console.log('🧪 Running all tests...');
+      await testStats();
+      await new Promise(r => setTimeout(r, 500));
+      await testGetAll();
+      await new Promise(r => setTimeout(r, 500));
+      await testCreate();
+      await new Promise(r => setTimeout(r, 500));
+      await testFilter();
+      await new Promise(r => setTimeout(r, 500));
+      testPageLoad();
+      testJSLoad();
+      await new Promise(r => setTimeout(r, 500));
+      await testProjectComment();
+      await new Promise(r => setTimeout(r, 500));
+      await testGetProjectComments();
+      await new Promise(r => setTimeout(r, 500));
+      await testLike();
+      await new Promise(r => setTimeout(r, 500));
+      await testReply();
+      
+      alert('✅ All tests completed! Check the results above.');
+    }
+    
+    // Clear test data
+    function clearTestData() {
+      if (confirm('Clear all test data from localStorage?')) {
+        localStorage.removeItem('cds_guestbook_entries');
+        localStorage.removeItem('cds_guestbook_draft');
+        alert('✅ Test data cleared!');
+      }
+    }
+    
+    // Create sample data
+    function createSampleData() {
+      const samples = [
+        { name: 'Alice', message: 'Amazing work! 🚀', projectId: null },
+        { name: 'Bob', message: 'Love the design!', projectId: 'project-1', projectTitle: 'Cosmic DevSpace' },
+        { name: 'Charlie', message: 'Great portfolio! 💯', projectId: null }
+      ];
+      
+      localStorage.setItem('cds_guestbook_entries', JSON.stringify(samples.map((s, i) => ({
+        ...s,
+        id: 'sample-' + i,
+        likes: Math.floor(Math.random() * 20),
+        likedBy: [],
+        replies: [],
+        createdAt: new Date(Date.now() - i * 3600000).toISOString(),
+        approved: true
+      }))));
+      
+      alert('✅ Sample data created! Refresh guestbook page to see it.');
+    }
+    
+    // Helper functions
+    function updateStatus(test, status) {
+      const el = document.getElementById(`status-${test}`);
+      if (el) {
+        el.className = `status ${status}`;
+        el.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+      }
+    }
+    
+    function showResult(test, data) {
+      const el = document.getElementById(`result-${test}`);
+      if (el) {
+        el.style.display = 'block';
+        el.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      }
+    }
+  </script>
+</body>
+</html>

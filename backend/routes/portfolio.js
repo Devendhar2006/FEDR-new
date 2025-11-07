@@ -23,6 +23,11 @@ const {
 // @access  Public
 router.get('/', optionalAuth, validatePagination, async (req, res) => {
   try {
+    console.log('🌟 ========== GET /api/portfolio REQUEST ==========');
+    console.log('👤 req.user:', req.user ? { _id: req.user._id, username: req.user.username } : 'NOT AUTHENTICATED');
+    console.log('🔑 Authorization header:', req.headers.authorization ? 'Present ✓' : 'MISSING ✗');
+    console.log('📋 Query params:', req.query);
+    
     const { 
       page = 1, 
       limit = 12, 
@@ -30,8 +35,11 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
       category, 
       featured, 
       status, // Don't default to 'completed' - let all items show
-      search 
+      search,
+      myItems // Filter to show only user's own items
     } = req.query;
+    
+    console.log('🎯 myItems parameter:', myItems);
     
     // Map frontend sort values to MongoDB sort format
     const sortMap = {
@@ -47,11 +55,26 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
     // Use sortParam if provided, otherwise use sort (for backward compatibility)
     const sort = sortMap[req.query.sort || sortParam] || req.query.sort || '-createdAt';
     
-    // Build filter object - include items with visibility 'public' or no visibility (for backward compatibility)
-    // TEMPORARILY: Show all items to debug - remove visibility filter
+    // Build filter object
     const filter = {};
     
-    // For debugging: Show all items regardless of visibility
+    // IMPORTANT: Filter by creator if user is authenticated and myItems is true
+    // This ensures users only see their own items by default
+    console.log('🔍 Checking myItems filter...');
+    console.log('   myItems === "true"?', myItems === 'true');
+    console.log('   req.user exists?', !!req.user);
+    
+    if (myItems === 'true' && req.user) {
+      filter.creator = req.user._id;
+      console.log('✅ FILTERING BY CREATOR:', req.user._id);
+      console.log('✅ Username:', req.user.username);
+    } else {
+      console.log('❌ NOT FILTERING BY CREATOR!');
+      if (myItems !== 'true') console.log('   Reason: myItems is not "true", it is:', myItems);
+      if (!req.user) console.log('   Reason: req.user is not set (user not authenticated)');
+    }
+    
+    // For debugging: Show all items to debug - remove visibility filter
     // TODO: Re-enable visibility filter after confirming items are saved
     // filter.$or = [
     //   { visibility: 'public' },
@@ -82,6 +105,11 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
       // Build andConditions array
       const andConditions = [];
       
+      // CRITICAL: Add creator filter first if it exists
+      if (filter.creator) {
+        andConditions.push({ creator: filter.creator });
+      }
+      
       // Add visibility filter if it exists
       if (filter.$or && filter.$or.length > 0) {
         andConditions.push({ $or: filter.$or });
@@ -103,6 +131,7 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
       if (andConditions.length > 0) {
         filter.$and = andConditions;
         if (filter.$or) delete filter.$or;
+        if (filter.creator) delete filter.creator; // Remove from root since it's in $and
       } else {
         // Merge additionalFilters directly into filter
         Object.assign(filter, additionalFilters);
@@ -111,20 +140,23 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
     } else if (filter.$or && filter.$or.length > 0) {
       // No additional filters, but we have visibility filter - keep it as is
     } else {
-      // No filters at all - filter remains empty {} which means "get all"
+      // No filters at all except creator - keep filter as is (creator will be preserved)
     }
     
     const skip = (page - 1) * limit;
     
-    // Debug: Log the filter being used
-    console.log('🔍 GET /api/portfolio - Filter:', JSON.stringify(filter, null, 2));
-    console.log('🔍 GET /api/portfolio - Sort:', sort);
-    console.log('🔍 GET /api/portfolio - Page:', page, 'Limit:', limit);
+    // Debug: Log the FINAL filter being used
+    console.log('🎯 ========== FINAL QUERY FILTER ==========');
+    console.log(JSON.stringify(filter, null, 2));
+    console.log('==========================================');
+    console.log('📊 Sort:', sort);
+    console.log('📄 Page:', page, 'Limit:', limit, 'Skip:', skip);
     
     // Get projects with pagination
     const [projects, total] = await Promise.all([
       Portfolio.find(filter)
         .populate('creator', 'username profile.avatar profile.fullName')
+        .populate('comments.user', 'username profile.avatar')
         .sort(sort)
         .skip(skip)
         .limit(parseInt(limit))
@@ -432,7 +464,7 @@ router.post('/:id/comments', validateMongoId(), async (req, res) => {
     // Track analytics
     if (req.user) {
       Analytics.trackEvent({
-        eventType: 'item_comment',
+        eventType: 'custom',
         eventName: 'Portfolio Item Commented',
         user: req.user._id,
         sessionId: req.sessionID || 'anonymous',
@@ -572,18 +604,25 @@ router.post('/:id/comments/:commentId/reply', validateMongoId(), async (req, res
 // @access  Public
 router.get('/:id', validateMongoId(), optionalAuth, async (req, res) => {
   try {
+    console.log('🔍 GET /api/portfolio/:id - Fetching item:', req.params.id);
     const { includeComments = 'true', commentsLimit = 10 } = req.query;
     
     const item = await Portfolio.findById(req.params.id)
       .populate('creator', 'username profile.avatar profile.fullName profile.bio')
       .lean();
     
+    console.log('📦 Item found:', item ? 'YES ✓' : 'NO ✗');
+    
     if (!item) {
+      console.log('❌ Item not found in database');
       return res.status(404).json({
+        success: false,
         error: 'Item Not Found',
         message: '🌌 This cosmic item doesn\'t exist in our universe!'
       });
     }
+    
+    console.log('📋 Item details:', { _id: item._id, title: item.title, itemType: item.itemType });
     
     // Check visibility
     if (item.visibility === 'private' && 
@@ -600,11 +639,19 @@ router.get('/:id', validateMongoId(), optionalAuth, async (req, res) => {
     // Fetch comments if requested
     let comments = [];
     if (includeComments === 'true') {
-      const itemType = item.itemType || 'project';
-      comments = await ItemComment.getApproved(req.params.id, itemType, {
-        sort: '-createdAt',
-        limit: parseInt(commentsLimit)
-      }).lean();
+      try {
+        const itemType = item.itemType || 'project';
+        console.log('💬 Fetching comments for item type:', itemType);
+        comments = await ItemComment.find({ itemId: req.params.id, approved: true })
+          .sort('-createdAt')
+          .limit(parseInt(commentsLimit))
+          .lean();
+        console.log('💬 Comments found:', comments.length);
+      } catch (commentError) {
+        console.error('⚠️ Error fetching comments (non-fatal):', commentError.message);
+        // Don't fail the whole request if comments fail to load
+        comments = [];
+      }
     }
     
     // Add user interaction data if authenticated
@@ -614,9 +661,9 @@ router.get('/:id', validateMongoId(), optionalAuth, async (req, res) => {
       ) || false;
     }
     
-    // Track analytics
-    await Analytics.trackEvent({
-      eventType: 'item_view',
+    // Track analytics (non-blocking, don't fail if it errors)
+    Analytics.trackEvent({
+      eventType: 'project_view',
       eventName: 'Portfolio Item Detail View',
       user: req.user?._id || null,
       sessionId: req.sessionID || 'anonymous',
@@ -631,7 +678,7 @@ router.get('/:id', validateMongoId(), optionalAuth, async (req, res) => {
         itemType: item.itemType || 'project',
         itemTitle: item.title
       }
-    });
+    }).catch(err => console.log('⚠️ Analytics tracking failed (non-fatal):', err.message));
     
     res.json({
       success: true,
@@ -643,10 +690,14 @@ router.get('/:id', validateMongoId(), optionalAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Item fetch error:', error);
+    console.error('❌ Item fetch error:', error);
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
+      success: false,
       error: 'Item Fetch Failed',
-      message: '🛠️ Houston, we have an item problem!'
+      message: error.message || '🛠️ Houston, we have an item problem!',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
@@ -654,14 +705,15 @@ router.get('/:id', validateMongoId(), optionalAuth, async (req, res) => {
 // @route   POST /api/portfolio/add
 // @desc    Add new portfolio item (project/certification/achievement)
 // @access  Private
-router.post('/add', authenticate, trackActivity, async (req, res) => {
+router.post('/add', authenticate, async (req, res) => {
   try {
     const { type = 'project', ...fields } = req.body;
     
     console.log('📝 POST /api/portfolio/add - Received request:', {
       type,
       title: fields.title || fields.certName || fields.achievementTitle,
-      userId: req.user._id
+      userId: req.user._id,
+      allFields: fields
     });
     
     // Validate type
@@ -704,15 +756,9 @@ router.post('/add', authenticate, trackActivity, async (req, res) => {
     await item.save();
     console.log('✅ Item saved successfully! ID:', item._id);
     
-    // Update user stats based on type
-    if (type === 'project') {
-      req.user.stats.projectsCreated += 1;
-    } else if (type === 'certification') {
-      req.user.stats.certificationsEarned = (req.user.stats.certificationsEarned || 0) + 1;
-    } else if (type === 'achievement') {
-      req.user.stats.achievementsEarned = (req.user.stats.achievementsEarned || 0) + 1;
-    }
-    await req.user.save();
+    // Skip user stats update for now to prevent hanging
+    // TODO: Re-enable after debugging
+    console.log('✅ Item saved, skipping user stats update for debugging');
     
     // Populate creator info
     await item.populate('creator', 'username profile.avatar');
@@ -740,10 +786,17 @@ router.post('/add', authenticate, trackActivity, async (req, res) => {
     
   } catch (error) {
     console.error('Portfolio item creation error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Validation errors:', error.errors);
     res.status(500).json({
       error: 'Item Creation Failed',
       message: '🛠️ Houston, we have a creation problem!',
-      details: error.message
+      details: error.message,
+      validationErrors: error.errors ? Object.keys(error.errors).map(key => ({
+        field: key,
+        message: error.errors[key].message
+      })) : []
     });
   }
 });

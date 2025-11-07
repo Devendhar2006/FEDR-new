@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Force Refresh</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      color: white;
+      font-family: Arial;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    .box {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 3rem;
+      border-radius: 20px;
+    }
+    .btn {
+      display: inline-block;
+      margin: 1rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Load New Pages</h1>
+    <p>Click to load with cache disabled:</p>
+    <button class="btn" onclick="loadProfile()">New Profile Page</button>
+    <button class="btn" onclick="loadSettings()">New Settings Page</button>
+  </div>
+  <script>
+    function loadProfile() {
+      window.location.href = 'profile.html?v=' + Date.now();
+    }
+    function loadSettings() {
+      window.location.href = 'settings.html?v=' + Date.now();
+    }
+  </script>
+</body>
+</html>

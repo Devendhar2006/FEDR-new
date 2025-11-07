@@ -44,6 +44,137 @@ const contactSchema = new mongoose.Schema({
 
 const Contact = mongoose.model('Contact', contactSchema);
 
+// User Profile Schema (for contact page profiles)
+const userProfileSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true,
+    match: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
+  },
+  github: {
+    type: String,
+    trim: true
+  },
+  linkedin: {
+    type: String,
+    trim: true
+  },
+  twitter: {
+    type: String,
+    trim: true
+  },
+  portfolio: {
+    type: String,
+    trim: true
+  },
+  location: {
+    type: String,
+    trim: true
+  },
+  ipAddress: String,
+  userAgent: String
+}, {
+  timestamps: true
+});
+
+const UserProfile = mongoose.model('UserProfile', userProfileSchema);
+
+// @route   POST /api/contact/profile
+// @desc    Save user profile
+// @access  Public
+router.post('/profile', async (req, res) => {
+  try {
+    const { name, email, github, linkedin, twitter, portfolio, location } = req.body;
+    
+    // Validation
+    if (!name || !email) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: '🚶 Name and Email are required!'
+      });
+    }
+    
+    // Check if profile already exists for this email
+    let userProfile = await UserProfile.findOne({ email: email.toLowerCase() });
+    
+    if (userProfile) {
+      // Update existing profile
+      userProfile.name = name;
+      userProfile.github = github || '';
+      userProfile.linkedin = linkedin || '';
+      userProfile.twitter = twitter || '';
+      userProfile.portfolio = portfolio || '';
+      userProfile.location = location || '';
+      userProfile.ipAddress = req.ip;
+      userProfile.userAgent = req.get('User-Agent');
+      await userProfile.save();
+    } else {
+      // Create new profile
+      userProfile = new UserProfile({
+        name,
+        email: email.toLowerCase(),
+        github: github || '',
+        linkedin: linkedin || '',
+        twitter: twitter || '',
+        portfolio: portfolio || '',
+        location: location || '',
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      await userProfile.save();
+    }
+    
+    // Track analytics
+    await Analytics.trackEvent({
+      eventType: 'profile_creation',
+      eventName: 'User Profile Created/Updated',
+      sessionId: req.sessionID || 'anonymous',
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      page: {
+        url: req.originalUrl,
+        path: '/contact'
+      },
+      eventData: {
+        profileId: userProfile._id
+      }
+    });
+    
+    res.status(201).json({
+      success: true,
+      message: '✅ Profile saved successfully!',
+      data: {
+        profileId: userProfile._id,
+        profile: {
+          name: userProfile.name,
+          email: userProfile.email,
+          github: userProfile.github,
+          linkedin: userProfile.linkedin,
+          twitter: userProfile.twitter,
+          portfolio: userProfile.portfolio,
+          location: userProfile.location
+        },
+        savedAt: userProfile.updatedAt
+      }
+    });
+  } catch (error) {
+    console.error('Profile save error:', error);
+    res.status(500).json({
+      error: 'Save Failed',
+      message: '🛠️ Error saving profile! Please try again.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // @route   POST /api/contact
 // @desc    Submit contact form
 // @access  Public

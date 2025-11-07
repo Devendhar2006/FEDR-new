@@ -112,6 +112,15 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Disable caching for development - force fresh loads
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
+
 // Serve static frontend
 const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND_DIR));
@@ -153,12 +162,14 @@ app.use('/api', (req, res, next) => {
     console.log(`📡 DB State: ${stateNames[readyState]} | Request: ${req.method} ${req.path}`);
   }
   
-  // Allow health check and OAuth endpoints regardless of DB state
-  const allowedPaths = ['/health', '/auth/google/status', '/auth/google', '/auth/google/callback'];
+  // Allow health check, auth, and OAuth endpoints regardless of DB state (for development)
+  const allowedPaths = ['/health', '/auth/register', '/auth/login', '/auth/google/status', '/auth/google', '/auth/google/callback'];
   const isAllowed = allowedPaths.some(path => req.path.includes(path));
   
   // Only block if disconnected (0) or disconnecting (3), and not an allowed path
-  if ((readyState === 0 || readyState === 3) && !isAllowed) {
+  // In development, allow all requests to pass through for better error messages
+  const isDev = (process.env.NODE_ENV || 'development') === 'development';
+  if ((readyState === 0 || readyState === 3) && !isAllowed && !isDev) {
     console.error(`❌ Request blocked - DB ${stateNames[readyState]}: ${req.method} ${req.path}`);
     return res.status(503).json({
       error: 'Service Unavailable',

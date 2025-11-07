@@ -187,6 +187,14 @@ const userSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
+    certificationsEarned: {
+      type: Number,
+      default: 0
+    },
+    achievementsEarned: {
+      type: Number,
+      default: 0
+    },
     messagesPosted: {
       type: Number,
       default: 0
@@ -245,8 +253,28 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Pre-save middleware to update login stats
+// Pre-save middleware to ensure stats exist and update login stats
 userSchema.pre('save', function(next) {
+  // Ensure stats object exists with all fields
+  if (!this.stats) {
+    this.stats = {
+      profileViews: 0,
+      projectsCreated: 0,
+      certificationsEarned: 0,
+      achievementsEarned: 0,
+      messagesPosted: 0,
+      likesReceived: 0
+    };
+  } else {
+    // Ensure all stat fields exist
+    if (this.stats.profileViews === undefined) this.stats.profileViews = 0;
+    if (this.stats.projectsCreated === undefined) this.stats.projectsCreated = 0;
+    if (this.stats.certificationsEarned === undefined) this.stats.certificationsEarned = 0;
+    if (this.stats.achievementsEarned === undefined) this.stats.achievementsEarned = 0;
+    if (this.stats.messagesPosted === undefined) this.stats.messagesPosted = 0;
+    if (this.stats.likesReceived === undefined) this.stats.likesReceived = 0;
+  }
+  
   if (this.isModified('lastLogin')) {
     this.loginCount += 1;
   }

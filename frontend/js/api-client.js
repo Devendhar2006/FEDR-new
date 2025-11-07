@@ -3,7 +3,12 @@
  * Centralized API communication layer
  */
 
-const API_BASE_URL = window.location.origin + '/api';
+// Detect the correct API base URL
+// If running on port 8080 (frontend dev server), point to backend on port 5000
+// Otherwise, use the same origin (for production or when served from backend)
+const API_BASE_URL = window.location.port === '8080' 
+  ? 'http://localhost:5000/api' 
+  : window.location.origin + '/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
@@ -129,6 +134,10 @@ const auth = {
 const projects = {
   // Get all projects
   getAll: async (params = {}) => {
+    // Add myItems parameter if user is authenticated
+    if (getAuthToken() && !params.myItems) {
+      params.myItems = 'true';
+    }
     const query = new URLSearchParams(params).toString();
     return await apiRequest(`/portfolio?${query}`);
   },

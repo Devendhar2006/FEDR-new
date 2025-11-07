@@ -1,10 +1,20 @@
 /**
  * COSMIC DEVSPACE - PORTFOLIO PAGE
  * Comprehensive portfolio functionality with filters, search, animations
+ * Version: 2025-11-07-03 (FIXED: API URL for port 8080)
  */
+
+console.log('🚀 Portfolio.js loaded - Version 2025-11-07-03');
 
 (function() {
   'use strict';
+  
+  // API Configuration - detect correct backend URL
+  const API_BASE_URL = window.location.port === '8080' 
+    ? 'http://localhost:5000/api' 
+    : '/api';
+  
+  console.log('📡 API Base URL:', API_BASE_URL);
   
   // Selectors
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
@@ -81,7 +91,14 @@
   async function fetchPortfolioItems() {
     showLoading(true);
     try {
+      const user = authUser();
       const params = new URLSearchParams();
+      
+      // CRITICAL: Add myItems=true to filter by logged-in user
+      if (user) {
+        params.append('myItems', 'true');
+      }
+      
       if (state.filters.category) params.append('category', state.filters.category);
       if (state.filters.search) params.append('search', state.filters.search);
       // Map frontend sort values to backend format
@@ -99,7 +116,19 @@
       params.append('page', state.currentPage);
       params.append('limit', state.itemsPerPage);
       
-      const response = await fetch(`/api/portfolio?${params}`);
+      // Add authorization header if user is logged in
+      const headers = {};
+      if (user && user.token) {
+        headers['Authorization'] = `Bearer ${user.token}`;
+      }
+      
+      console.log('🌐 Fetching from:', `${API_BASE_URL}/portfolio?${params}`);
+      const response = await fetch(`${API_BASE_URL}/portfolio?${params}`, { headers });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       
       if (data.success) {
@@ -383,7 +412,7 @@
     }
     
     try {
-      const response = await fetch(`/api/portfolio/${id}/like`, {
+      const response = await fetch(`${API_BASE_URL}/portfolio/${id}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.token}`
@@ -492,10 +521,12 @@
     try {
       const token = (user && (user.token || localStorage.getItem('cds_token'))) || null;
       const isEdit = !!state.editingId;
-      const endpoint = isEdit ? `/api/portfolio/${state.editingId}` : '/api/portfolio';
+      const endpoint = isEdit ? `${API_BASE_URL}/portfolio/${state.editingId}` : `${API_BASE_URL}/portfolio`;
       const method = isEdit ? 'PUT' : 'POST';
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
+      
+      console.log('💾 Saving portfolio item:', { method, endpoint, isEdit });
 
       const res = await fetch(endpoint, {
         method,
@@ -565,7 +596,7 @@
       if (!user) { toast('Sign in to delete.','error'); return; }
       if (!id) { tile.remove(); return; }
       try {
-        const res = await fetch(`/api/portfolio/${id}`, { method:'DELETE' });
+        const res = await fetch(`${API_BASE_URL}/portfolio/${id}`, { method:'DELETE', headers: {'Authorization': `Bearer ${user.token}`} });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || 'Delete failed');
         toast('Project deleted.','success');

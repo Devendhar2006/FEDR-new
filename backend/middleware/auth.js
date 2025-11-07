@@ -223,6 +223,26 @@ const rateLimitByUser = (maxRequests = 100, windowMs = 15 * 60 * 1000) => {
 const trackActivity = async (req, res, next) => {
   if (req.user) {
     try {
+      // Ensure stats object exists with all fields
+      if (!req.user.stats) {
+        req.user.stats = {
+          profileViews: 0,
+          projectsCreated: 0,
+          certificationsEarned: 0,
+          achievementsEarned: 0,
+          messagesPosted: 0,
+          likesReceived: 0
+        };
+      } else {
+        // Add missing fields to existing stats
+        if (req.user.stats.certificationsEarned === undefined) {
+          req.user.stats.certificationsEarned = 0;
+        }
+        if (req.user.stats.achievementsEarned === undefined) {
+          req.user.stats.achievementsEarned = 0;
+        }
+      }
+      
       // Update last login time
       req.user.lastLogin = new Date();
       await req.user.save();

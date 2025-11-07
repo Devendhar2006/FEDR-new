@@ -31,7 +31,7 @@
       <a href="register.html" class="btn-register">Register</a>
     </div>
     <div class="navbar-user" id="authLoggedIn" style="display: none;">
-      <span class="user-greeting">Hi, <span id="userName">User</span></span>
+      <span class="user-greeting">Hi, <span id="navUserName">User</span></span>
       <div class="user-menu">
         <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
         <div class="dropdown-menu">
@@ -64,25 +64,94 @@
   </section>
 
   <main class="container contact-container">
-    <div class="contact-grid">
-      <!-- Contact Form -->
-      <div class="contact-form-section">
-        <h2 class="section-title">Send a Message</h2>
-        <form id="contactForm" class="contact-form" novalidate>
+    <!-- Step 1: User Profile Information -->
+    <div class="profile-step" id="profileStep">
+      <div class="profile-form-section">
+        <h2 class="section-title">👤 Your Profile Information</h2>
+        <p class="section-description">Tell us about yourself so we can connect better!</p>
+        
+        <form id="profileForm" class="contact-form" novalidate>
           <div class="form-row">
             <div class="field">
-              <label for="contactName">Your Name <span class="required">*</span></label>
-              <input id="contactName" name="name" type="text" required maxlength="100" placeholder="Jane Doe">
+              <label for="userName">Your Name <span class="required">*</span></label>
+              <input id="userName" name="name" type="text" required maxlength="100" placeholder="Jane Doe">
             </div>
             <div class="field">
-              <label for="contactEmail">Email <span class="required">*</span></label>
-              <input id="contactEmail" name="email" type="email" required placeholder="jane@example.com">
+              <label for="userEmail">Email <span class="required">*</span></label>
+              <input id="userEmail" name="email" type="email" required placeholder="jane@example.com">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="field">
+              <label for="userGithub">GitHub Profile</label>
+              <input id="userGithub" name="github" type="text" placeholder="https://github.com/yourusername">
+            </div>
+            <div class="field">
+              <label for="userLinkedin">LinkedIn Profile</label>
+              <input id="userLinkedin" name="linkedin" type="text" placeholder="https://linkedin.com/in/yourusername">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="field">
+              <label for="userTwitter">Twitter/X Profile</label>
+              <input id="userTwitter" name="twitter" type="text" placeholder="https://twitter.com/yourusername">
+            </div>
+            <div class="field">
+              <label for="userPortfolio">Portfolio Website</label>
+              <input id="userPortfolio" name="portfolio" type="text" placeholder="https://yourwebsite.com">
+            </div>
+          </div>
+          
+          <div class="field">
+            <label for="userLocation">Location (Optional)</label>
+            <input id="userLocation" name="location" type="text" maxlength="100" placeholder="City, Country">
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn-gradient next-btn" id="nextBtn">
+              <span class="btn-text">Next Step ➡️</span>
+            </button>
+          </div>
+          
+          <p class="demo-note">Your information helps us personalize the experience!</p>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Step 2: Contact Form & Info -->
+    <div class="contact-step" id="contactStep" style="display: none;">
+      <div class="user-profile-banner" id="userProfileBanner">
+        <div class="banner-content">
+          <h3>Welcome, <span id="displayName">User</span>! 👋</h3>
+          <p class="banner-subtitle">Your profile links are ready! Click to visit your profiles:</p>
+          <div class="user-social-links" id="userSocialLinks"></div>
+          <p class="banner-note">💡 Companies can now contact you using the form below</p>
+          <button class="btn-secondary edit-profile-btn" id="editProfileBtn">✏️ Edit Profile</button>
+        </div>
+      </div>
+      
+      <div class="contact-grid">
+        <!-- Contact Form -->
+        <div class="contact-form-section">
+          <h2 class="section-title">📨 Companies: Contact This Developer</h2>
+          <p class="form-description">Interested in working with <span id="displayName2">this developer</span>? Send them a message!</p>
+          <form id="contactForm" class="contact-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="companyName">Your Company/Name <span class="required">*</span></label>
+              <input id="companyName" name="companyName" type="text" required maxlength="100" placeholder="Acme Corp or John Smith">
+            </div>
+            <div class="field">
+              <label for="companyEmail">Your Email <span class="required">*</span></label>
+              <input id="companyEmail" name="companyEmail" type="email" required placeholder="contact@acme.com">
             </div>
           </div>
           
           <div class="field">
             <label for="contactSubject">Subject <span class="required">*</span></label>
-            <input id="contactSubject" name="subject" type="text" required maxlength="100" placeholder="Project Collaboration">
+            <input id="contactSubject" name="subject" type="text" required maxlength="100" placeholder="Job Opportunity / Project Inquiry">
           </div>
           
           <div class="field">
@@ -93,7 +162,7 @@
               rows="6" 
               required 
               maxlength="2000" 
-              placeholder="Tell me more about..."
+              placeholder="Hi! We'd love to discuss an opportunity with you..."
             ></textarea>
             <span class="char-counter"><span id="messageCharCount">0</span>/2000</span>
           </div>
@@ -118,9 +187,9 @@
         </form>
       </div>
 
-      <!-- Contact Info Section -->
+      <!-- Dynamic Contact Info Section -->
       <div class="contact-info-section">
-        <h2 class="section-title">Connect with Me</h2>
+        <h2 class="section-title">Connect with Site Owner</h2>
         
         <div class="contact-methods">
           <a href="mailto:vishu@cosmicdevspace.com" class="contact-method" target="_blank">
@@ -168,6 +237,7 @@
         </div>
       </div>
     </div>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -179,40 +249,18 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
     
-    // Character counter
-    const messageInput = document.getElementById('contactMessage');
-    const charCount = document.getElementById('messageCharCount');
-    messageInput.addEventListener('input', () => {
-      charCount.textContent = messageInput.value.length;
-      charCount.parentElement.classList.toggle('warning', messageInput.value.length > 1800);
-      charCount.parentElement.classList.toggle('danger', messageInput.value.length >= 2000);
-    });
-    
-    // Form submission
-    document.getElementById('contactForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('sendBtn');
-      const btnText = btn.querySelector('.btn-text');
-      const btnLoader = btn.querySelector('.btn-loader');
+    // Character counter for message textarea
+    document.addEventListener('DOMContentLoaded', () => {
+      const messageInput = document.getElementById('contactMessage');
+      const charCount = document.getElementById('messageCharCount');
       
-      btnText.classList.add('hidden');
-      btnLoader.classList.remove('hidden');
-      btn.disabled = true;
-      
-      setTimeout(() => {
-        const toast = document.createElement('div');
-        toast.className = 'toast success show';
-        toast.textContent = '✅ Message sent successfully!';
-        document.body.appendChild(toast);
-        
-        setTimeout(() => toast.remove(), 3000);
-        
-        e.target.reset();
-        charCount.textContent = '0';
-        btnText.classList.remove('hidden');
-        btnLoader.classList.add('hidden');
-        btn.disabled = false;
-      }, 1500);
+      if (messageInput && charCount) {
+        messageInput.addEventListener('input', () => {
+          charCount.textContent = messageInput.value.length;
+          charCount.parentElement.classList.toggle('warning', messageInput.value.length > 1800);
+          charCount.parentElement.classList.toggle('danger', messageInput.value.length >= 2000);
+        });
+      }
     });
   </script>
   <script src="./js/navbar.js"></script>

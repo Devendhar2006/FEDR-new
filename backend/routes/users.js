@@ -619,4 +619,340 @@ router.get('/:id/activity',
   }
 );
 
+// @route   GET /api/users/me
+// @desc    Get current user's profile
+// @access  Private
+router.get('/me/profile', 
+  authenticate,
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user._id)
+        .select('-password')
+        .lean();
+      
+      if (!user) {
+        return res.status(404).json({
+          error: 'User Not Found',
+          message: '🌌 Your profile couldn\'t be found in the cosmic database!'
+        });
+      }
+      
+      // Get user's stats
+      const [projectCount, messageCount] = await Promise.all([
+        Portfolio.countDocuments({ creator: user._id }),
+        Guestbook.countDocuments({ user: user._id, status: 'approved' })
+      ]);
+      
+      res.json({
+        success: true,
+        message: '👨‍🚀 Your cosmic profile retrieved successfully!',
+        data: {
+          user,
+          stats: {
+            ...user.stats,
+            projectCount,
+            messageCount
+          },
+          cosmicRank: {
+            level: 'Space Explorer',
+            icon: '🌟'
+          }
+        }
+      });
+      
+    } catch (error) {
+      console.error('Profile fetch error:', error);
+      res.status(500).json({
+        error: 'Profile Fetch Failed',
+        message: '🛠️ Houston, we have a profile problem!'
+      });
+    }
+  }
+);
+
+// @route   PUT /api/users/me
+// @desc    Update current user's profile
+// @access  Private
+router.put('/me/profile', 
+  authenticate,
+  trackActivity,
+  async (req, res) => {
+    try {
+      const updates = {};
+      const { 
+        displayName, 
+        firstName, 
+        lastName, 
+        bio, 
+        location, 
+        website, 
+        github, 
+        linkedin, 
+        twitter,
+        avatar 
+      } = req.body;
+      
+      // Update profile fields
+      if (displayName !== undefined) updates['profile.displayName'] = displayName;
+      if (firstName !== undefined) updates['profile.firstName'] = firstName;
+      if (lastName !== undefined) updates['profile.lastName'] = lastName;
+      if (bio !== undefined) updates['profile.bio'] = bio;
+      if (location !== undefined) updates['profile.location'] = location;
+      if (website !== undefined) updates['profile.website'] = website;
+      if (github !== undefined) updates['profile.github'] = github;
+      if (linkedin !== undefined) updates['profile.linkedin'] = linkedin;
+      if (twitter !== undefined) updates['profile.twitter'] = twitter;
+      if (avatar !== undefined) updates['profile.avatar'] = avatar;
+      
+      const user = await User.findByIdAndUpdate(
+        req.user._id,
+        { $set: updates },
+        { new: true, runValidators: true }
+      ).select('-password');
+      
+      res.json({
+        success: true,
+        message: '✨ Your cosmic profile has been updated!',
+        data: { user }
+      });
+      
+    } catch (error) {
+      console.error('Profile update error:', error);
+      
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({
+          error: 'Validation Error',
+          message: Object.values(error.errors).map(e => e.message).join(', ')
+        });
+      }
+      
+      res.status(500).json({
+        error: 'Profile Update Failed',
+        message: '🛠️ Houston, we have a profile update problem!'
+      });
+    }
+  }
+);
+
+// @route   PUT /api/users/me/preferences
+// @desc    Update user preferences (theme, notifications, privacy)
+// @access  Private
+router.put('/me/preferences', 
+  authenticate,
+  async (req, res) => {
+    try {
+      const { theme, notifications, privacy } = req.body;
+      const updates = {};
+      
+      if (theme) {
+        const validThemes = ['cosmic-dark', 'cosmic-light', 'nebula', 'galaxy'];
+        if (validThemes.includes(theme)) {
+          updates['preferences.theme'] = theme;
+        }
+      }
+      
+      if (notifications) {
+        if (notifications.email !== undefined) updates['preferences.notifications.email'] = notifications.email;
+        if (notifications.push !== undefined) updates['preferences.notifications.push'] = notifications.push;
+        if (notifications.guestbook !== undefined) updates['preferences.notifications.guestbook'] = notifications.guestbook;
+        if (notifications.portfolio !== undefined) updates['preferences.notifications.portfolio'] = notifications.portfolio;
+      }
+      
+      if (privacy) {
+        if (privacy.showEmail !== undefined) updates['preferences.privacy.showEmail'] = privacy.showEmail;
+        if (privacy.showLastLogin !== undefined) updates['preferences.privacy.showLastLogin'] = privacy.showLastLogin;
+        if (privacy.allowMessages !== undefined) updates['preferences.privacy.allowMessages'] = privacy.allowMessages;
+      }
+      
+      const user = await User.findByIdAndUpdate(
+        req.user._id,
+        { $set: updates },
+        { new: true }
+      ).select('preferences');
+      
+      res.json({
+        success: true,
+        message: '⚙️ Your preferences have been updated!',
+        data: { preferences: user.preferences }
+      });
+      
+    } catch (error) {
+      console.error('Preferences update error:', error);
+      res.status(500).json({
+        error: 'Preferences Update Failed',
+        message: '🛠️ Houston, we have a preferences problem!'
+      });
+    }
+  }
+);
+
+// @route   POST /api/users/me/change-password
+// @desc    Change user password
+// @access  Private
+router.post('/me/change-password', 
+  authenticate,
+  trackActivity,
+  async (req, res) => {
+    try {
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+      
+      // Validation
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        return res.status(400).json({
+          error: 'Missing Fields',
+          message: '🚫 Please provide current password, new password, and confirmation!'
+        });
+      }
+      
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({
+          error: 'Password Mismatch',
+          message: '🚫 New password and confirmation don\'t match!'
+        });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          error: 'Weak Password',
+          message: '🚫 New password must be at least 6 characters long!'
+        });
+      }
+      
+      // Get user with password
+      const user = await User.findById(req.user._id).select('+password');
+      
+      // Verify current password
+      const isMatch = await user.comparePassword(currentPassword);
+      if (!isMatch) {
+        return res.status(401).json({
+          error: 'Invalid Password',
+          message: '🚫 Current password is incorrect!'
+        });
+      }
+      
+      // Update password
+      user.password = newPassword;
+      await user.save();
+      
+      res.json({
+        success: true,
+        message: '🔐 Your password has been changed successfully!'
+      });
+      
+    } catch (error) {
+      console.error('Password change error:', error);
+      res.status(500).json({
+        error: 'Password Change Failed',
+        message: '🛠️ Houston, we have a password problem!'
+      });
+    }
+  }
+);
+
+// @route   POST /api/users/me/upload-avatar
+// @desc    Upload user avatar
+// @access  Private
+router.post('/me/upload-avatar', 
+  authenticate,
+  async (req, res) => {
+    try {
+      const { avatar } = req.body;
+      
+      if (!avatar) {
+        return res.status(400).json({
+          error: 'No Avatar Provided',
+          message: '🚫 Please provide an avatar URL or data!'
+        });
+      }
+      
+      const user = await User.findByIdAndUpdate(
+        req.user._id,
+        { $set: { 'profile.avatar': avatar } },
+        { new: true }
+      ).select('profile.avatar username');
+      
+      res.json({
+        success: true,
+        message: '🖼️ Your avatar has been updated!',
+        data: { 
+          avatar: user.profile.avatar,
+          username: user.username
+        }
+      });
+      
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      res.status(500).json({
+        error: 'Avatar Upload Failed',
+        message: '🛠️ Houston, we have an avatar problem!'
+      });
+    }
+  }
+);
+
+// @route   DELETE /api/users/me
+// @desc    Delete current user's account
+// @access  Private
+router.delete('/me/account', 
+  authenticate,
+  async (req, res) => {
+    try {
+      const { password, confirmation } = req.body;
+      
+      if (!password) {
+        return res.status(400).json({
+          error: 'Password Required',
+          message: '🚫 Please provide your password to confirm account deletion!'
+        });
+      }
+      
+      if (confirmation !== 'DELETE MY ACCOUNT') {
+        return res.status(400).json({
+          error: 'Confirmation Required',
+          message: '🚫 Please type "DELETE MY ACCOUNT" to confirm!'
+        });
+      }
+      
+      // Get user with password
+      const user = await User.findById(req.user._id).select('+password');
+      
+      // Verify password
+      const isMatch = await user.comparePassword(password);
+      if (!isMatch) {
+        return res.status(401).json({
+          error: 'Invalid Password',
+          message: '🚫 Password is incorrect!'
+        });
+      }
+      
+      // Store user info for response
+      const deletedUserInfo = {
+        username: user.username,
+        email: user.email
+      };
+      
+      // Delete user and all related data
+      await Promise.all([
+        User.findByIdAndDelete(req.user._id),
+        Portfolio.deleteMany({ creator: req.user._id }),
+        Guestbook.deleteMany({ user: req.user._id }),
+        Analytics.deleteMany({ user: req.user._id })
+      ]);
+      
+      res.json({
+        success: true,
+        message: '🗑️ Your account and all data have been permanently deleted from the cosmic database.',
+        data: { deletedUser: deletedUserInfo }
+      });
+      
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      res.status(500).json({
+        error: 'Account Deletion Failed',
+        message: '🛠️ Houston, we have a deletion problem!'
+      });
+    }
+  }
+);
+
 module.exports = router;

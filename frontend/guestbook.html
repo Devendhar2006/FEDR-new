@@ -31,7 +31,7 @@
       <a href="register.html" class="btn-register">Register</a>
     </div>
     <div class="navbar-user" id="authLoggedIn" style="display: none;">
-      <span class="user-greeting">Hi, <span id="userName">User</span></span>
+      <span class="user-greeting">Hi, <span id="navUserName">User</span></span>
       <div class="user-menu">
         <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
         <div class="dropdown-menu">
@@ -112,6 +112,14 @@
         </div>
         
         <div class="field">
+          <label for="projectLink">🎯 Commenting About <span class="field-hint">(Optional)</span></label>
+          <select id="projectLink" name="projectLink" class="project-select">
+            <option value="">General Message</option>
+            <!-- Projects will be loaded dynamically -->
+          </select>
+        </div>
+        
+        <div class="field">
           <label for="entryMessage">Message <span class="required">*</span></label>
           <div class="message-input-wrapper">
             <textarea 
@@ -149,8 +157,9 @@
       <div class="controls-row">
         <!-- Filter Buttons -->
         <div class="filter-buttons">
-          <button class="filter-btn active" data-filter="all">All Users</button>
-          <button class="filter-btn" data-filter="pinned">Only Pinned 📌</button>
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="general">General Messages</button>
+          <button class="filter-btn" data-filter="project-comments">Project Comments</button>
         </div>
 
         <!-- Search Bar -->

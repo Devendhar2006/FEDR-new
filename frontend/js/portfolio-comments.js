@@ -449,11 +449,7 @@ function escapeHtml(text) {
 
 // Show notification
 function showNotification(message, type = 'info') {
-  if (typeof window.showNotification === 'function') {
-    window.showNotification(message, type);
-    return;
-  }
-  
+  // Create notification directly - avoid recursion
   const notification = document.createElement('div');
   notification.className = `notification notification-${type}`;
   notification.textContent = message;

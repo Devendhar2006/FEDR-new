@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | Cosmic DevSpace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/navbar.css">
+  <link rel="stylesheet" href="./css/settings.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="cosmic-bg">
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <a href="index.html">🚀 Cosmic DevSpace</a>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+      <li><a href="projects.html" class="nav-link">Projects</a></li>
+      <li><a href="blog.html" class="nav-link">Blog</a></li>
+      <li><a href="guestbook.html" class="nav-link">Guestbook</a></li>
+      <li><a href="analytics.html" class="nav-link">Analytics</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+    <div class="navbar-auth" id="authLoggedOut">
+      <a href="login.html" class="nav-link">Sign In</a>
+      <a href="register.html" class="btn-register">Register</a>
+    </div>
+    <div class="navbar-user" id="authLoggedIn" style="display: none;">
+      <span class="user-greeting">Hi, <span id="userName">User</span></span>
+      <div class="user-menu">
+        <img id="userAvatar" src="" alt="Avatar" class="user-avatar">
+        <div class="dropdown-menu">
+          <a href="profile.html">👤 Profile</a>
+          <a href="admin.html" id="adminLink" style="display: none;">⚙️ Admin</a>
+          <a href="settings.html">⚙️ Settings</a>
+          <a href="#" id="logoutBtn">🚪 Logout</a>
+        </div>
+      </div>
+    </div>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
+
+  <!-- Settings Container -->
+  <main class="settings-container">
+    <div class="settings-header">
+      <h1><i class="fas fa-cog"></i> Settings</h1>
+      <p>Manage your account preferences and cosmic experience</p>
+    </div>
+
+    <div class="settings-layout">
+      <!-- Sidebar Navigation -->
+      <aside class="settings-sidebar glass-card">
+        <button class="settings-nav-btn active" data-section="account">
+          <i class="fas fa-user-cog"></i>
+          <span>Account</span>
+        </button>
+        <button class="settings-nav-btn" data-section="security">
+          <i class="fas fa-shield-alt"></i>
+          <span>Security</span>
+        </button>
+        <button class="settings-nav-btn" data-section="notifications">
+          <i class="fas fa-bell"></i>
+          <span>Notifications</span>
+        </button>
+        <button class="settings-nav-btn" data-section="privacy">
+          <i class="fas fa-lock"></i>
+          <span>Privacy</span>
+        </button>
+        <button class="settings-nav-btn" data-section="theme">
+          <i class="fas fa-palette"></i>
+          <span>Appearance</span>
+        </button>
+        <button class="settings-nav-btn" data-section="connected">
+          <i class="fas fa-link"></i>
+          <span>Connected Accounts</span>
+        </button>
+        <button class="settings-nav-btn danger" data-section="danger">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>Danger Zone</span>
+        </button>
+      </aside>
+
+      <!-- Main Content Area -->
+      <div class="settings-content">
+        <!-- Account Settings -->
+        <section class="settings-section active glass-card" id="accountSection">
+          <h2><i class="fas fa-user-cog"></i> Account Settings</h2>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-envelope"></i> Email Address</h3>
+              <p>Your email address for notifications and account recovery</p>
+              <p class="setting-value" id="currentEmail">loading...</p>
+            </div>
+            <button class="btn-cosmic-outline btn-sm" id="changeEmailBtn">Change Email</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-key"></i> Password</h3>
+              <p>Keep your account secure with a strong password</p>
+              <p class="setting-value">Last changed: <span id="lastPasswordChange">Never</span></p>
+            </div>
+            <button class="btn-cosmic-outline btn-sm" id="changePasswordBtn">Change Password</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-check-circle"></i> Email Verification</h3>
+              <p id="verificationStatus">Check if your email is verified</p>
+            </div>
+            <button class="btn-cosmic-primary btn-sm" id="verifyEmailBtn" style="display: none;">Verify Email</button>
+          </div>
+        </section>
+
+        <!-- Security Settings -->
+        <section class="settings-section glass-card" id="securitySection" style="display: none;">
+          <h2><i class="fas fa-shield-alt"></i> Security Settings</h2>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-mobile-alt"></i> Two-Factor Authentication</h3>
+              <p>Add an extra layer of security to your account</p>
+              <p class="setting-status disabled">Status: <strong>Disabled</strong></p>
+            </div>
+            <button class="btn-cosmic-primary btn-sm" id="enable2FABtn">Enable 2FA</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-history"></i> Login History</h3>
+              <p>View your recent login activity</p>
+            </div>
+            <button class="btn-cosmic-outline btn-sm" id="viewLoginHistoryBtn">View History</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-desktop"></i> Active Sessions</h3>
+              <p>Manage devices where you're currently logged in</p>
+              <p class="setting-value"><span id="activeSessionsCount">1</span> active session(s)</p>
+            </div>
+            <button class="btn-cosmic-danger btn-sm" id="logoutAllBtn">Logout All Devices</button>
+          </div>
+        </section>
+
+        <!-- Notifications Settings -->
+        <section class="settings-section glass-card" id="notificationsSection" style="display: none;">
+          <h2><i class="fas fa-bell"></i> Notification Preferences</h2>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-envelope"></i> Email Notifications</h3>
+              <p>Receive updates via email</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="emailNotifications" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-bell"></i> Push Notifications</h3>
+              <p>Get real-time browser notifications</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pushNotifications" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-book"></i> Guestbook Notifications</h3>
+              <p>Notify when someone signs your guestbook</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="guestbookNotifications" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-folder"></i> Portfolio Notifications</h3>
+              <p>Notify about likes and comments on your projects</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="portfolioNotifications" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="save-section">
+            <button class="btn-cosmic-primary" id="saveNotificationsBtn">
+              <i class="fas fa-save"></i> Save Notification Preferences
+            </button>
+          </div>
+        </section>
+
+        <!-- Privacy Settings -->
+        <section class="settings-section glass-card" id="privacySection" style="display: none;">
+          <h2><i class="fas fa-lock"></i> Privacy Settings</h2>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-user"></i> Profile Visibility</h3>
+              <p>Control who can see your profile</p>
+            </div>
+            <select class="form-select" id="profileVisibility">
+              <option value="public">Public - Everyone can view</option>
+              <option value="private">Private - Only you can view</option>
+            </select>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-envelope"></i> Show Email Address</h3>
+              <p>Display your email on your public profile</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="showEmail">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-clock"></i> Show Last Login</h3>
+              <p>Display when you were last online</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="showLastLogin" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-comments"></i> Allow Direct Messages</h3>
+              <p>Let other users send you messages</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="allowMessages" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="save-section">
+            <button class="btn-cosmic-primary" id="savePrivacyBtn">
+              <i class="fas fa-save"></i> Save Privacy Settings
+            </button>
+          </div>
+        </section>
+
+        <!-- Theme/Appearance Settings -->
+        <section class="settings-section glass-card" id="themeSection" style="display: none;">
+          <h2><i class="fas fa-palette"></i> Appearance Settings</h2>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-moon"></i> Theme</h3>
+              <p>Choose your cosmic experience</p>
+            </div>
+          </div>
+
+          <div class="theme-grid">
+            <div class="theme-option" data-theme="cosmic-dark">
+              <div class="theme-preview cosmic-dark-preview">
+                <div class="preview-bar"></div>
+                <div class="preview-content"></div>
+              </div>
+              <div class="theme-info">
+                <h4>🌑 Cosmic Dark</h4>
+                <p>Classic dark theme</p>
+              </div>
+              <div class="theme-check">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+
+            <div class="theme-option" data-theme="cosmic-light">
+              <div class="theme-preview cosmic-light-preview">
+                <div class="preview-bar"></div>
+                <div class="preview-content"></div>
+              </div>
+              <div class="theme-info">
+                <h4>☀️ Cosmic Light</h4>
+                <p>Bright and clean</p>
+              </div>
+              <div class="theme-check">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+
+            <div class="theme-option" data-theme="nebula">
+              <div class="theme-preview nebula-preview">
+                <div class="preview-bar"></div>
+                <div class="preview-content"></div>
+              </div>
+              <div class="theme-info">
+                <h4>🌌 Nebula</h4>
+                <p>Purple cosmic vibes</p>
+              </div>
+              <div class="theme-check">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+
+            <div class="theme-option" data-theme="galaxy">
+              <div class="theme-preview galaxy-preview">
+                <div class="preview-bar"></div>
+                <div class="preview-content"></div>
+              </div>
+              <div class="theme-info">
+                <h4>🌠 Galaxy</h4>
+                <p>Deep space blues</p>
+              </div>
+              <div class="theme-check">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-text-height"></i> Font Size</h3>
+              <p>Adjust text size for better readability</p>
+            </div>
+            <div class="font-size-controls">
+              <button class="btn-icon" id="decreaseFontBtn"><i class="fas fa-minus"></i></button>
+              <span class="font-size-display" id="currentFontSize">100%</span>
+              <button class="btn-icon" id="increaseFontBtn"><i class="fas fa-plus"></i></button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fas fa-adjust"></i> High Contrast Mode</h3>
+              <p>Enhance visibility with higher contrast</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="highContrast">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="save-section">
+            <button class="btn-cosmic-primary" id="saveThemeBtn">
+              <i class="fas fa-save"></i> Save Appearance Settings
+            </button>
+          </div>
+        </section>
+
+        <!-- Connected Accounts Settings -->
+        <section class="settings-section glass-card" id="connectedSection" style="display: none;">
+          <h2><i class="fas fa-link"></i> Connected Accounts</h2>
+          
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fab fa-google"></i> Google Account</h3>
+              <p id="googleStatus">Connect your Google account for easy sign-in</p>
+            </div>
+            <button class="btn-cosmic-outline btn-sm" id="connectGoogleBtn">Connect</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fab fa-github"></i> GitHub Account</h3>
+              <p id="githubStatus">Link your GitHub for project imports</p>
+            </div>
+            <button class="btn-cosmic-outline btn-sm" id="connectGithubBtn">Connect</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3><i class="fab fa-discord"></i> Discord Account</h3>
+              <p id="discordStatus">Join our cosmic community</p>
+            </div>
+            <button class="btn-cosmic-outline btn-sm" id="connectDiscordBtn">Connect</button>
+          </div>
+        </section>
+
+        <!-- Danger Zone -->
+        <section class="settings-section glass-card danger-zone" id="dangerSection" style="display: none;">
+          <h2><i class="fas fa-exclamation-triangle"></i> Danger Zone</h2>
+          <p class="danger-warning">These actions are irreversible. Proceed with caution.</p>
+          
+          <div class="danger-item">
+            <div class="danger-info">
+              <h3><i class="fas fa-trash-alt"></i> Delete Account</h3>
+              <p>Permanently delete your account and all associated data</p>
+              <ul class="danger-list">
+                <li>All your projects will be deleted</li>
+                <li>Your guestbook entries will be removed</li>
+                <li>All comments and likes will be deleted</li>
+                <li>This action cannot be undone</li>
+              </ul>
+            </div>
+            <button class="btn-cosmic-danger" id="deleteAccountBtn">
+              <i class="fas fa-trash-alt"></i> Delete My Account
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Change Email Modal -->
+  <div class="modal" id="changeEmailModal">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2><i class="fas fa-envelope"></i> Change Email Address</h2>
+        <button class="modal-close" id="closeEmailModal">&times;</button>
+      </div>
+      <form id="changeEmailForm">
+        <div class="form-group">
+          <label>New Email Address</label>
+          <input type="email" id="newEmail" placeholder="newemail@example.com" required>
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" id="emailPassword" placeholder="Enter your password" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cosmic-outline" id="cancelEmailBtn">Cancel</button>
+          <button type="submit" class="btn-cosmic-primary">
+            <i class="fas fa-save"></i> Change Email
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal" id="changePasswordModal">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2><i class="fas fa-key"></i> Change Password</h2>
+        <button class="modal-close" id="closePasswordModal">&times;</button>
+      </div>
+      <form id="changePasswordForm">
+        <div class="form-group">
+          <label>Current Password</label>
+          <input type="password" id="currentPassword" placeholder="Enter current password" required>
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="newPassword" placeholder="Enter new password" required minlength="6">
+          <small>At least 6 characters</small>
+        </div>
+        <div class="form-group">
+          <label>Confirm New Password</label>
+          <input type="password" id="confirmPassword" placeholder="Confirm new password" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cosmic-outline" id="cancelPasswordBtn">Cancel</button>
+          <button type="submit" class="btn-cosmic-primary">
+            <i class="fas fa-save"></i> Change Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Account Modal -->
+  <div class="modal" id="deleteAccountModal">
+    <div class="modal-content glass-card danger-modal">
+      <div class="modal-header">
+        <h2><i class="fas fa-exclamation-triangle"></i> Delete Account</h2>
+        <button class="modal-close" id="closeDeleteModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="danger-warning-box">
+          <i class="fas fa-exclamation-circle"></i>
+          <p><strong>Warning:</strong> This action is permanent and cannot be undone!</p>
+        </div>
+        <p>All your data will be permanently deleted:</p>
+        <ul class="danger-list">
+          <li>Profile and account information</li>
+          <li>All projects and portfolio items</li>
+          <li>Guestbook entries and comments</li>
+          <li>Achievements and statistics</li>
+        </ul>
+      </div>
+      <form id="deleteAccountForm">
+        <div class="form-group">
+          <label>Enter your password to confirm</label>
+          <input type="password" id="deletePassword" placeholder="Your password" required>
+        </div>
+        <div class="form-group">
+          <label>Type "DELETE MY ACCOUNT" to confirm</label>
+          <input type="text" id="deleteConfirmation" placeholder="DELETE MY ACCOUNT" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cosmic-outline" id="cancelDeleteBtn">Cancel</button>
+          <button type="submit" class="btn-cosmic-danger">
+            <i class="fas fa-trash-alt"></i> Permanently Delete Account
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">Success!</span>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <p>Updating settings...</p>
+  </div>
+
+  <script src="./js/navbar.js"></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/settings.js"></script>
+</body>
+</html>

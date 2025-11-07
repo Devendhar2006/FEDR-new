@@ -126,7 +126,7 @@ function updateAuthState() {
       authLoggedIn.style.display = 'flex';
       
       // Update user name
-      const userNameElement = document.getElementById('userName');
+      const userNameElement = document.getElementById('navUserName');
       if (userNameElement) {
         userNameElement.textContent = user.name || user.email.split('@')[0];
       }

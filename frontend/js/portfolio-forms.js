@@ -275,15 +275,8 @@ function generateProjectForm() {
       </div>
       
       <div class="form-group">
-        <label for="description">📄 Description <span class="required">*</span> <small>(Rich Text)</small></label>
-        <div class="rich-text-wrapper">
-          <div class="rich-text-toolbar">
-            <button type="button" onclick="formatText('bold')" title="Bold"><b>B</b></button>
-            <button type="button" onclick="formatText('italic')" title="Italic"><i>I</i></button>
-            <button type="button" onclick="formatText('underline')" title="Underline"><u>U</u></button>
-          </div>
-          <div contenteditable="true" id="description" class="rich-text-editor" required></div>
-        </div>
+        <label for="description">📄 Description <span class="required">*</span></label>
+        <textarea id="description" name="description" rows="6" maxlength="500" placeholder="Describe your project..." required></textarea>
         <span class="char-counter"><span id="descCounter">0</span>/500</span>
       </div>
       
@@ -508,15 +501,8 @@ function generateAchievementForm() {
       <div class="section-header">📄 Description</div>
       
       <div class="form-group">
-        <label for="achievementDescription">📝 Description <span class="required">*</span> <small>(Rich Text)</small></label>
-        <div class="rich-text-wrapper">
-          <div class="rich-text-toolbar">
-            <button type="button" onclick="formatText('bold')" title="Bold"><b>B</b></button>
-            <button type="button" onclick="formatText('italic')" title="Italic"><i>I</i></button>
-            <button type="button" onclick="formatText('underline')" title="Underline"><u>U</u></button>
-          </div>
-          <div contenteditable="true" id="achievementDescription" class="rich-text-editor" required></div>
-        </div>
+        <label for="achievementDescription">📝 Description <span class="required">*</span></label>
+        <textarea id="achievementDescription" name="achievementDescription" rows="6" maxlength="500" placeholder="Describe your achievement..." required></textarea>
         <span class="char-counter"><span id="achievementDescCounter">0</span>/500</span>
       </div>
       
@@ -572,16 +558,7 @@ function initializeFormFeatures(type) {
     initDatePicker('achievementDate');
   }
   
-  // Rich text editors
-  if (type === 'project' || type === 'achievement') {
-    const descId = type === 'project' ? 'description' : 'achievementDescription';
-    const editor = document.getElementById(descId);
-    if (editor) {
-      editor.addEventListener('input', () => {
-        updateCharCounter(descId, editor.textContent.length);
-      });
-    }
-  }
+  // Rich text editors are no longer used - all forms now use textarea
 }
 
 // Setup character counters
@@ -626,26 +603,7 @@ function setupCharacterCounters() {
       const certDescCounter = document.getElementById('certDescCounter');
       const achievementDescCounter = document.getElementById('achievementDescCounter');
       
-      editor.addEventListener('input', () => {
-        const length = editor.textContent?.length || editor.innerHTML?.replace(/<[^>]*>/g, '').length || 0;
-        if (descCounter && editor.id === 'description') {
-          updateCharCounter('descCounter', length);
-        } else if (certDescCounter && editor.id === 'certDescription') {
-          updateCharCounter('certDescCounter', length);
-        } else if (achievementDescCounter && editor.id === 'achievementDescription') {
-          updateCharCounter('achievementDescCounter', length);
-        }
-      });
-      
-      // Update on initial load
-      const initialLength = editor.textContent?.length || editor.innerHTML?.replace(/<[^>]*>/g, '').length || 0;
-      if (descCounter && editor.id === 'description') {
-        updateCharCounter('descCounter', initialLength);
-      } else if (certDescCounter && editor.id === 'certDescription') {
-        updateCharCounter('certDescCounter', initialLength);
-      } else if (achievementDescCounter && editor.id === 'achievementDescription') {
-        updateCharCounter('achievementDescCounter', initialLength);
-      }
+      // Contenteditable editors are no longer used - all descriptions use textarea now
     });
   }, 100);
 }
@@ -785,19 +743,35 @@ async function submitPortfolioForm(event) {
   
   const type = formState.currentType;
   if (!type) {
-    console.error('No type specified');
+    console.error('❌ No type specified');
     showNotification('❌ Error: Form type not specified', 'error');
     return;
   }
   
   const submitBtn = event.target.querySelector('button[type="submit"]');
+  if (!submitBtn) {
+    console.error('❌ Submit button not found');
+    return;
+  }
+  
   const originalText = submitBtn.textContent;
   submitBtn.textContent = 'Saving...';
   submitBtn.disabled = true;
   
   try {
+    // Check if user is logged in first
+    const user = CosmicAPI?.utils?.getCurrentUser();
+    if (!user) {
+      throw new Error('Please login to add items');
+    }
+    
+    // Check if CosmicAPI is loaded
+    if (!window.CosmicAPI || !CosmicAPI.projects) {
+      throw new Error('API client not loaded. Please refresh the page.');
+    }
+    
     const formData = getFormData(type);
-    console.log('Form data for type', type, ':', formData);
+    console.log('📋 Form data for type', type, ':', formData);
     
     // Validate required fields
     if (type === 'certification') {
@@ -810,17 +784,28 @@ async function submitPortfolioForm(event) {
       if (!formData.issueDate) {
         throw new Error('Issue date is required');
       }
+    } else if (type === 'achievement') {
+      if (!formData.title && !formData.achievementTitle) {
+        throw new Error('Achievement title is required');
+      }
+      if (!formData.achievementCategory) {
+        throw new Error('Achievement category is required');
+      }
+      if (!formData.achievementDate) {
+        throw new Error('Achievement date is required');
+      }
+    } else if (type === 'project') {
+      if (!formData.title) {
+        throw new Error('Project title is required');
+      }
+      if (!formData.description) {
+        throw new Error('Project description is required');
+      }
     }
     
     // Build request body based on type
     const requestBody = buildRequestBody(type, formData);
-    console.log('Request body:', requestBody);
-    
-    // Submit to API using CosmicAPI
-    const user = CosmicAPI?.utils?.getCurrentUser();
-    if (!user) {
-      throw new Error('Please login to add items');
-    }
+    console.log('📦 Request body:', requestBody);
     
     let response;
     try {
@@ -831,6 +816,7 @@ async function submitPortfolioForm(event) {
       } else {
         // Add new item using the add endpoint
         console.log('Adding new item of type:', type);
+        console.log('Request body:', JSON.stringify(requestBody, null, 2));
         response = await CosmicAPI.projects.add(type, requestBody);
       }
       
@@ -843,59 +829,26 @@ async function submitPortfolioForm(event) {
         
         // Show success message
         const itemTypeName = type === 'certification' ? 'Certification' : type === 'achievement' ? 'Achievement' : 'Project';
-        showNotification(`🎉 ${itemTypeName} saved successfully!`, 'success');
+        showNotification(`🎉 ${itemTypeName} saved successfully! Reloading...`, 'success');
         
         // Close modal
         closePortfolioModal();
         
-        // Reload page to show new item
+        // ALWAYS reload the page to show new items - most reliable method
         setTimeout(() => {
-          console.log('Checking for reload functions...');
-          console.log('fetchPortfolioItems exists:', typeof window.fetchPortfolioItems === 'function');
-          console.log('loadProjects exists:', typeof window.loadProjects === 'function');
-          
-          // Reset type filter to 'all' to ensure new item is visible
-          if (typeof window.filterByType === 'function') {
-            console.log('Resetting filter to show all items...');
-            try {
-              window.filterByType('all');
-            } catch (err) {
-              console.error('Error resetting filter:', err);
-            }
-          }
-          
-          // Try to reload portfolio items if on portfolio page
-          if (typeof window.fetchPortfolioItems === 'function') {
-            console.log('Reloading portfolio items...');
-            try {
-              window.fetchPortfolioItems();
-              console.log('Portfolio items reloaded successfully');
-            } catch (err) {
-              console.error('Error reloading portfolio:', err);
-              window.location.reload();
-            }
-          } else if (typeof window.loadProjects === 'function') {
-            // Try to reload projects if on projects page
-            console.log('Reloading projects...');
-            try {
-              window.loadProjects();
-              console.log('Projects reloaded successfully');
-            } catch (err) {
-              console.error('Error reloading projects:', err);
-              window.location.reload();
-            }
-          } else {
-            // If neither function exists, reload the page
-            console.log('No reload function found, reloading page...');
-            window.location.reload();
-          }
-        }, 1000);
+          console.log('✅ Item saved successfully, reloading page...');
+          window.location.reload();
+        }, 800);
       } else {
         throw new Error(response?.message || response?.error || 'Failed to save item');
       }
     } catch (error) {
-      console.error('Form submission error:', error);
-      console.error('Error details:', error.response || error);
+      console.error('❌ Form submission error:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error name:', error.name);
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Error details:', error.response || 'No response details');
+      console.error('❌ Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
       throw error;
     }
     
@@ -937,7 +890,7 @@ function buildRequestBody(type, formData) {
     if (formData.startDate) body.timeline = { startDate: formData.startDate };
     if (formData.endDate && body.timeline) body.timeline.endDate = formData.endDate;
   } else if (type === 'certification') {
-    body.description = formData.certDescription || formData.description || '';
+    body.description = formData.certDescription || formData.description || 'Professional certification';
     body.certification = {
       issuingOrganization: formData.issuingOrganization || '',
       issueDate: formData.issueDate || '',
@@ -954,12 +907,15 @@ function buildRequestBody(type, formData) {
     if (!body.certification.issueDate) {
       throw new Error('Issue date is required');
     }
+    if (!body.description || body.description.trim() === '') {
+      body.description = 'Professional certification';
+    }
     
     // Ensure category is set
     body.category = 'certification';
     body.status = 'completed';
   } else if (type === 'achievement') {
-    body.description = formData.achievementDescription || formData.description || '';
+    body.description = formData.achievementDescription || formData.description || 'Achievement earned';
     body.achievement = {
       achievementCategory: formData.achievementCategory || '',
       achievementDate: formData.achievementDate || '',
@@ -974,6 +930,13 @@ function buildRequestBody(type, formData) {
     if (!body.achievement.achievementDate) {
       throw new Error('Achievement date is required');
     }
+    if (!body.description || body.description.trim() === '') {
+      body.description = 'Achievement earned';
+    }
+    
+    // Ensure category is set - CRITICAL FIX
+    body.category = 'achievement';
+    body.status = 'completed';
   }
   
   // Handle images (for now, we'll use placeholder - in production, upload to server first)
@@ -1238,11 +1201,7 @@ function addTagFromInput() {
 
 // Notification function (reuse from portfolio-new.html if exists)
 function showNotification(message, type = 'info') {
-  if (typeof window.showNotification === 'function') {
-    window.showNotification(message, type);
-    return;
-  }
-  
+  // Create notification directly - avoid recursion
   const notification = document.createElement('div');
   notification.className = `notification notification-${type}`;
   notification.textContent = message;

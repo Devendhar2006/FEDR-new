@@ -1,616 +1,492 @@
 const express = require('express');
 const router = express.Router();
-const Guestbook = require('../models/Guestbook');
+const GuestbookEntry = require('../models/GuestbookEntry');
 const Analytics = require('../models/Analytics');
-const { 
-  authenticate, 
-  authorize, 
-  optionalAuth,
-  trackActivity 
-} = require('../middleware/auth');
-const { 
-  validateGuestbookMessage, 
-  validateMongoId, 
-  validatePagination 
-} = require('../middleware/validation');
+
+// Helper function to get client IP
+const getClientIP = (req) => {
+  return req.ip || req.connection.remoteAddress || 'unknown';
+};
 
 // @route   GET /api/guestbook
-// @desc    Get approved guestbook messages
+// @desc    Get guestbook entries with filtering
 // @access  Public
-router.get('/', validatePagination, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { 
       page = 1, 
-      limit = 20, 
-      category, 
-      featured,
-      filter: filterType = 'all' // NEW: all, project-comments, general
+      limit = 10, 
+      filter = 'all', // all, project-comments, general
+      sort = 'newest' // newest, oldest, most-liked
     } = req.query;
     
     const skip = (page - 1) * limit;
     
-    // Build filter
-    let filter = { status: 'approved', isSpam: false };
-    if (category) filter.category = category;
-    if (featured === 'true') filter.featured = true;
+    // Build filter query
+    let query = { approved: true };
     
-    // NEW: Add project filter
-    if (filterType === 'project-comments') {
-      filter.projectId = { $ne: null };
-    } else if (filterType === 'general') {
-      filter.projectId = null;
+    if (filter === 'project-comments') {
+      query.projectId = { $ne: null };
+    } else if (filter === 'general') {
+      query.projectId = null;
     }
     
-    const [messages, total] = await Promise.all([
-      Guestbook.find(filter)
-        .populate('user', 'username profile.avatar cosmicRank')
-        .populate('projectId', 'title') // NEW: Populate project info
-        .sort({ featured: -1, createdAt: -1 })
+    // Build sort query
+    let sortQuery = {};
+    switch (sort) {
+      case 'oldest':
+        sortQuery = { createdAt: 1 };
+        break;
+      case 'most-liked':
+        sortQuery = { likes: -1, createdAt: -1 };
+        break;
+      default: // newest
+        sortQuery = { pinned: -1, createdAt: -1 };
+    }
+    
+    const [entries, total] = await Promise.all([
+      GuestbookEntry.find(query)
+        .sort(sortQuery)
         .skip(skip)
         .limit(parseInt(limit))
         .lean(),
-      Guestbook.countDocuments(filter)
+      GuestbookEntry.countDocuments(query)
     ]);
-    
-    // Track page view
-    await Analytics.trackEvent({
-      eventType: 'page_view',
-      eventName: 'Guestbook View',
-      sessionId: req.sessionID || 'anonymous',
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      page: {
-        url: req.originalUrl,
-        path: '/guestbook'
-      },
-      eventData: { category, featured }
-    });
     
     res.json({
       success: true,
-      message: '💫 Cosmic transmissions retrieved successfully!',
+      message: '📖 Guestbook entries retrieved!',
       data: {
-        messages,
+        entries,
         pagination: {
           currentPage: parseInt(page),
           totalPages: Math.ceil(total / limit),
-          totalMessages: total,
+          totalEntries: total,
           hasNext: page < Math.ceil(total / limit),
           hasPrev: page > 1
-        },
-        filters: { category, featured }
+        }
       }
     });
     
   } catch (error) {
     console.error('Guestbook fetch error:', error);
     res.status(500).json({
-      error: 'Guestbook Fetch Failed',
-      message: '🛠️ Houston, we have a guestbook problem!'
+      error: 'Fetch Failed',
+      message: '🛠️ Error loading guestbook entries!'
     });
   }
 });
 
-// @route   GET /api/guestbook/featured
-// @desc    Get featured guestbook messages
+// @route   GET /api/guestbook/stats
+// @desc    Get guestbook statistics
 // @access  Public
-router.get('/featured', async (req, res) => {
+router.get('/stats', async (req, res) => {
   try {
-    const { limit = 5 } = req.query;
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     
-    const messages = await Guestbook.getFeatured(parseInt(limit));
-    
-    res.json({
-      success: true,
-      message: '⭐ Featured cosmic transmissions retrieved successfully!',
-      data: { messages }
-    });
-    
-  } catch (error) {
-    console.error('Featured messages fetch error:', error);
-    res.status(500).json({
-      error: 'Featured Messages Fetch Failed',
-      message: '🛠️ Houston, we have a featured messages problem!'
-    });
-  }
-});
-
-// @route   GET /api/guestbook/categories
-// @desc    Get message categories with counts
-// @access  Public
-router.get('/categories', async (req, res) => {
-  try {
-    const categories = await Guestbook.aggregate([
-      { $match: { status: 'approved', isSpam: false } },
-      { $group: { _id: '$category', count: { $sum: 1 } } },
-      { $sort: { count: -1 } }
+    const [total, lastWeek, topUsers] = await Promise.all([
+      GuestbookEntry.countDocuments({ approved: true }),
+      GuestbookEntry.countDocuments({ 
+        approved: true,
+        createdAt: { $gte: sevenDaysAgo }
+      }),
+      GuestbookEntry.aggregate([
+        { $match: { approved: true } },
+        { $group: { 
+          _id: '$name', 
+          count: { $sum: 1 },
+          avatar: { $first: '$avatar' }
+        }},
+        { $sort: { count: -1 } },
+        { $limit: 1 }
+      ])
     ]);
     
+    const topUser = topUsers[0] || { _id: 'No entries yet', count: 0 };
+    
     res.json({
       success: true,
-      message: '📊 Message categories retrieved successfully!',
-      data: { categories }
+      data: {
+        total,
+        lastWeek,
+        topUser: {
+          name: topUser._id,
+          count: topUser.count,
+          avatar: topUser.avatar
+        }
+      }
     });
     
   } catch (error) {
-    console.error('Categories fetch error:', error);
+    console.error('Stats fetch error:', error);
     res.status(500).json({
-      error: 'Categories Fetch Failed',
-      message: '🛠️ Houston, we have a categories problem!'
+      error: 'Stats Failed',
+      message: '🛠️ Error loading statistics!'
     });
   }
 });
 
 // @route   POST /api/guestbook
-// @desc    Post new guestbook message
+// @desc    Create new guestbook entry
 // @access  Public
-router.post('/', optionalAuth, validateGuestbookMessage, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { 
       name, 
       email, 
+      avatar,
       message, 
-      category = 'general', 
-      contact,
-      projectId = null, // NEW: Project linking
-      projectTitle = null // NEW: Project title
+      projectId,
+      projectTitle,
+      projectType
     } = req.body;
     
-    // Check for rate limiting (basic implementation)
-    const recentMessages = await Guestbook.countDocuments({
-      ipAddress: req.ip,
-      createdAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) } // Last hour
-    });
-    
-    if (recentMessages >= 5) {
-      return res.status(429).json({
-        error: 'Rate Limit Exceeded',
-        message: '🚀 Slow down, space traveler! You can only send 5 messages per hour.',
-        retryAfter: 3600
+    // Validation
+    if (!name || !message) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: '⚠️ Name and message are required!'
       });
     }
     
-    const messageData = {
+    if (message.length > 240) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: '⚠️ Message must be 240 characters or less!'
+      });
+    }
+    
+    // Rate limiting check
+    const clientIP = getClientIP(req);
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    
+    const recentEntries = await GuestbookEntry.countDocuments({
+      ipAddress: clientIP,
+      createdAt: { $gte: oneHourAgo }
+    });
+    
+    if (recentEntries >= 5) {
+      return res.status(429).json({
+        error: 'Rate Limit',
+        message: '⏰ You can only post 5 entries per hour. Please wait!'
+      });
+    }
+    
+    // Create entry
+    const entry = new GuestbookEntry({
       name: name.trim(),
       email: email ? email.trim() : undefined,
+      avatar: avatar || undefined,
       message: message.trim(),
-      category,
-      contact,
-      projectId, // NEW
-      projectTitle, // NEW
-      user: req.user?._id || null,
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent') || '',
-      location: {
-        // In a real app, you'd use a geolocation service
-        country: req.get('CF-IPCountry') || 'Unknown',
-        timezone: req.get('CF-Timezone') || 'UTC'
-      }
-    };
+      projectId: projectId || undefined,
+      projectTitle: projectTitle || undefined,
+      projectType: projectType || 'general',
+      ipAddress: clientIP,
+      userAgent: req.get('User-Agent')
+    });
     
-    const guestbookEntry = new Guestbook(messageData);
-    await guestbookEntry.save();
-    
-    // Update user stats if authenticated
-    if (req.user) {
-      req.user.stats.messagesPosted += 1;
-      await req.user.save();
-      
-      // Add social butterfly achievement
-      if (req.user.stats.messagesPosted >= 10) {
-        req.user.addAchievement(
-          'Social Butterfly',
-          'You\'ve shared your cosmic thoughts 10 times! Your voice echoes across the universe.',
-          '🦋'
-        );
-        await req.user.save();
-      }
-    }
-    
-    // Populate user data if available
-    if (guestbookEntry.user) {
-      await guestbookEntry.populate('user', 'username profile.avatar cosmicRank');
-    }
+    await entry.save();
     
     // Track analytics
     await Analytics.trackEvent({
-      eventType: 'message_post',
-      eventName: 'Guestbook Message Posted',
-      user: req.user?._id || null,
+      eventType: 'guestbook_entry',
+      eventName: 'Guestbook Entry Created',
       sessionId: req.sessionID || 'anonymous',
-      ipAddress: req.ip,
+      ipAddress: clientIP,
       userAgent: req.get('User-Agent'),
       page: {
         url: req.originalUrl,
         path: '/guestbook'
       },
       eventData: {
-        messageCategory: category,
-        messageLength: message.length,
-        hasEmail: !!email,
-        hasContact: !!contact
-      },
-      conversion: {
-        isConversion: true,
-        conversionType: 'contact'
+        hasProject: !!projectId,
+        projectType: projectType || 'general',
+        messageLength: message.length
       }
     });
-    
-    // Emit real-time event (Socket.IO)
-    if (req.app.get('io')) {
-      req.app.get('io').emit('new_guestbook_message', {
-        id: guestbookEntry._id,
-        name: guestbookEntry.authorName,
-        message: guestbookEntry.excerpt,
-        category: guestbookEntry.category,
-        timestamp: guestbookEntry.createdAt
-      });
-    }
     
     res.status(201).json({
       success: true,
-      message: '🚀 Your cosmic transmission has been sent successfully! Thank you for joining our universe.',
-      data: { 
-        message: guestbookEntry,
-        status: guestbookEntry.status,
-        spamScore: guestbookEntry.spamScore
-      }
+      message: '✅ Entry added to guestbook!',
+      data: { entry }
     });
     
   } catch (error) {
-    console.error('Guestbook message creation error:', error);
+    console.error('Entry creation error:', error);
     res.status(500).json({
-      error: 'Message Transmission Failed',
-      message: '🛠️ Houston, we have a transmission problem! Please try again.'
-    });
-  }
-});
-
-// @route   GET /api/guestbook/:id
-// @desc    Get single guestbook message
-// @access  Public
-router.get('/:id', validateMongoId(), async (req, res) => {
-  try {
-    const message = await Guestbook.findById(req.params.id)
-      .populate('user', 'username profile.avatar cosmicRank')
-      .populate('replies.user', 'username profile.avatar')
-      .lean();
-    
-    if (!message) {
-      return res.status(404).json({
-        error: 'Message Not Found',
-        message: '🌌 This cosmic transmission doesn\'t exist in our universe!'
-      });
-    }
-    
-    if (message.status !== 'approved' && !message.isSpam) {
-      return res.status(404).json({
-        error: 'Message Not Available',
-        message: '🚫 This cosmic transmission is not available!'
-      });
-    }
-    
-    // Increment view count
-    await Guestbook.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
-    
-    res.json({
-      success: true,
-      message: '💫 Cosmic transmission retrieved successfully!',
-      data: { message }
-    });
-    
-  } catch (error) {
-    console.error('Message fetch error:', error);
-    res.status(500).json({
-      error: 'Message Fetch Failed',
-      message: '🛠️ Houston, we have a message problem!'
+      error: 'Creation Failed',
+      message: '🛠️ Error creating entry!'
     });
   }
 });
 
 // @route   POST /api/guestbook/:id/like
-// @desc    Toggle like on guestbook message
-// @access  Private
-router.post('/:id/like', authenticate, validateMongoId(), async (req, res) => {
+// @desc    Toggle like on entry
+// @access  Public
+router.post('/:id/like', async (req, res) => {
   try {
-    const message = await Guestbook.findById(req.params.id);
+    const entry = await GuestbookEntry.findById(req.params.id);
     
-    if (!message) {
+    if (!entry) {
       return res.status(404).json({
-        error: 'Message Not Found',
-        message: '🌌 This cosmic transmission doesn\'t exist!'
+        error: 'Not Found',
+        message: '🌌 Entry not found!'
       });
     }
     
-    if (message.status !== 'approved') {
-      return res.status(403).json({
-        error: 'Message Not Available',
-        message: '🚫 You cannot like this message!'
-      });
+    const clientIP = getClientIP(req);
+    const hasLiked = entry.likedBy.includes(clientIP);
+    
+    if (hasLiked) {
+      // Unlike
+      entry.likes = Math.max(0, entry.likes - 1);
+      entry.likedBy = entry.likedBy.filter(ip => ip !== clientIP);
+    } else {
+      // Like
+      entry.likes += 1;
+      entry.likedBy.push(clientIP);
     }
     
-    const result = message.toggleLike(req.user._id);
-    await message.save();
-    
-    // Track analytics
-    await Analytics.trackEvent({
-      eventType: 'message_like',
-      eventName: result.liked ? 'Message Liked' : 'Message Unliked',
-      user: req.user._id,
-      sessionId: req.sessionID,
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      page: {
-        url: req.originalUrl,
-        path: `/guestbook/${req.params.id}/like`
-      },
-      eventData: {
-        messageId: message._id,
-        action: result.liked ? 'like' : 'unlike'
-      }
-    });
+    await entry.save();
     
     res.json({
       success: true,
-      message: result.liked ? '❤️ Message liked!' : '💔 Like removed!',
+      message: hasLiked ? '💔 Like removed' : '❤️ Entry liked!',
       data: {
-        liked: result.liked,
-        likesCount: result.likesCount
+        liked: !hasLiked,
+        likes: entry.likes
       }
     });
     
   } catch (error) {
-    console.error('Message like error:', error);
+    console.error('Like error:', error);
     res.status(500).json({
-      error: 'Like Action Failed',
-      message: '🛠️ Houston, we have a like problem!'
+      error: 'Like Failed',
+      message: '🛠️ Error processing like!'
     });
   }
 });
 
 // @route   POST /api/guestbook/:id/reply
-// @desc    Reply to guestbook message
-// @access  Private
-router.post('/:id/reply', authenticate, validateMongoId(), async (req, res) => {
+// @desc    Add reply to entry
+// @access  Public
+router.post('/:id/reply', async (req, res) => {
   try {
-    const { message: replyMessage } = req.body;
+    const { name, email, avatar, message, isAdmin } = req.body;
     
-    if (!replyMessage || replyMessage.trim().length < 1) {
+    if (!name || !message) {
       return res.status(400).json({
-        error: 'Reply Required',
-        message: '💬 Please provide a reply message!'
+        error: 'Validation Error',
+        message: '⚠️ Name and message are required!'
       });
     }
     
-    if (replyMessage.length > 500) {
+    if (message.length > 500) {
       return res.status(400).json({
-        error: 'Reply Too Long',
-        message: '💬 Reply cannot exceed 500 characters!'
+        error: 'Validation Error',
+        message: '⚠️ Reply must be 500 characters or less!'
       });
     }
     
-    const message = await Guestbook.findById(req.params.id);
+    const entry = await GuestbookEntry.findById(req.params.id);
     
-    if (!message) {
+    if (!entry) {
       return res.status(404).json({
-        error: 'Message Not Found',
-        message: '🌌 This cosmic transmission doesn\'t exist!'
+        error: 'Not Found',
+        message: '🌌 Entry not found!'
       });
     }
     
-    if (message.status !== 'approved') {
-      return res.status(403).json({
-        error: 'Cannot Reply',
-        message: '🚫 You cannot reply to this message!'
-      });
-    }
+    entry.replies.push({
+      name: name.trim(),
+      email: email ? email.trim() : undefined,
+      avatar: avatar || undefined,
+      message: message.trim(),
+      isAdmin: isAdmin || false,
+      createdAt: new Date()
+    });
     
-    await message.addReply(req.user._id, req.user.username, replyMessage.trim());
-    
-    // Populate the new reply
-    await message.populate('replies.user', 'username profile.avatar');
-    
-    const newReply = message.replies[message.replies.length - 1];
+    await entry.save();
     
     res.status(201).json({
       success: true,
-      message: '💬 Your cosmic reply has been sent!',
-      data: { reply: newReply }
-    });
-    
-  } catch (error) {
-    console.error('Reply creation error:', error);
-    res.status(500).json({
-      error: 'Reply Creation Failed',
-      message: '🛠️ Houston, we have a reply problem!'
-    });
-  }
-});
-
-// @route   POST /api/guestbook/:id/flag
-// @desc    Flag a guestbook message
-// @access  Private
-router.post('/:id/flag', authenticate, validateMongoId(), async (req, res) => {
-  try {
-    const { reason, description } = req.body;
-    
-    const validReasons = ['spam', 'inappropriate', 'offensive', 'misleading', 'other'];
-    if (!reason || !validReasons.includes(reason)) {
-      return res.status(400).json({
-        error: 'Invalid Flag Reason',
-        message: '🚫 Please provide a valid reason for flagging!'
-      });
-    }
-    
-    const message = await Guestbook.findById(req.params.id);
-    
-    if (!message) {
-      return res.status(404).json({
-        error: 'Message Not Found',
-        message: '🌌 This cosmic transmission doesn\'t exist!'
-      });
-    }
-    
-    const flagged = message.flagMessage(req.user._id, reason, description);
-    
-    if (!flagged) {
-      return res.status(400).json({
-        error: 'Already Flagged',
-        message: '🚩 You have already flagged this message!'
-      });
-    }
-    
-    await message.save();
-    
-    res.json({
-      success: true,
-      message: '🚩 Message flagged successfully! Our moderation team will review it.',
-      data: { flagged: true }
-    });
-    
-  } catch (error) {
-    console.error('Message flag error:', error);
-    res.status(500).json({
-      error: 'Flag Action Failed',
-      message: '🛠️ Houston, we have a flagging problem!'
-    });
-  }
-});
-
-// @route   GET /api/guestbook/search
-// @desc    Search guestbook messages
-// @access  Public
-router.get('/search', async (req, res) => {
-  try {
-    const { q: query, category, limit = 20 } = req.query;
-    
-    if (!query || query.trim().length < 2) {
-      return res.status(400).json({
-        error: 'Invalid Search Query',
-        message: '🔍 Search query must be at least 2 characters long!'
-      });
-    }
-    
-    const messages = await Guestbook.searchMessages(query.trim(), { 
-      category, 
-      limit: parseInt(limit) 
-    });
-    
-    res.json({
-      success: true,
-      message: `🔍 Found ${messages.length} cosmic transmissions matching your search!`,
+      message: '💬 Reply added!',
       data: { 
-        messages,
-        query: query.trim(),
-        category,
-        resultCount: messages.length
+        reply: entry.replies[entry.replies.length - 1]
       }
     });
     
   } catch (error) {
-    console.error('Guestbook search error:', error);
+    console.error('Reply error:', error);
     res.status(500).json({
-      error: 'Search Failed',
-      message: '🛠️ Houston, we have a search problem!'
+      error: 'Reply Failed',
+      message: '🛠️ Error adding reply!'
+    });
+  }
+});
+
+// @route   POST /api/guestbook/:id/report
+// @desc    Report entry (admin feature)
+// @access  Public
+router.post('/:id/report', async (req, res) => {
+  try {
+    const entry = await GuestbookEntry.findById(req.params.id);
+    
+    if (!entry) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: '🌌 Entry not found!'
+      });
+    }
+    
+    entry.reported = true;
+    await entry.save();
+    
+    res.json({
+      success: true,
+      message: '🚩 Entry reported. Admin will review it.'
+    });
+    
+  } catch (error) {
+    console.error('Report error:', error);
+    res.status(500).json({
+      error: 'Report Failed',
+      message: '🛠️ Error reporting entry!'
+    });
+  }
+});
+
+// @route   GET /api/projects/:id/comments
+// @desc    Get comments for specific project
+// @access  Public
+router.get('/projects/:id/comments', async (req, res) => {
+  try {
+    const entries = await GuestbookEntry.find({
+      projectId: req.params.id,
+      approved: true
+    })
+    .sort({ createdAt: -1 })
+    .lean();
+    
+    res.json({
+      success: true,
+      message: '💬 Project comments retrieved!',
+      data: { entries, count: entries.length }
+    });
+    
+  } catch (error) {
+    console.error('Project comments fetch error:', error);
+    res.status(500).json({
+      error: 'Fetch Failed',
+      message: '🛠️ Error loading comments!'
+    });
+  }
+});
+
+// @route   POST /api/projects/:id/comments
+// @desc    Add comment to project (saves to guestbook)
+// @access  Public
+router.post('/projects/:id/comments', async (req, res) => {
+  try {
+    const { name, email, avatar, message, projectTitle } = req.body;
+    
+    if (!name || !message) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: '⚠️ Name and message are required!'
+      });
+    }
+    
+    // Create guestbook entry with project link
+    const entry = new GuestbookEntry({
+      name: name.trim(),
+      email: email ? email.trim() : undefined,
+      avatar: avatar || undefined,
+      message: message.trim(),
+      projectId: req.params.id,
+      projectTitle: projectTitle || 'Unknown Project',
+      projectType: 'project',
+      ipAddress: getClientIP(req),
+      userAgent: req.get('User-Agent')
+    });
+    
+    await entry.save();
+    
+    res.status(201).json({
+      success: true,
+      message: '✅ Comment added!',
+      data: { entry }
+    });
+    
+  } catch (error) {
+    console.error('Project comment error:', error);
+    res.status(500).json({
+      error: 'Comment Failed',
+      message: '🛠️ Error adding comment!'
     });
   }
 });
 
 // @route   DELETE /api/guestbook/:id
-// @desc    Delete guestbook message (Admin only)
-// @access  Private (Admin)
-router.delete('/:id', 
-  authenticate, 
-  authorize('admin', 'moderator'), 
-  validateMongoId(),
-  trackActivity,
-  async (req, res) => {
-    try {
-      const message = await Guestbook.findById(req.params.id);
-      
-      if (!message) {
-        return res.status(404).json({
-          error: 'Message Not Found',
-          message: '🌌 This cosmic transmission doesn\'t exist!'
-        });
-      }
-      
-      await Guestbook.findByIdAndDelete(req.params.id);
-      
-      res.json({
-        success: true,
-        message: '🗑️ Cosmic transmission has been removed from the universe.',
-        data: { deletedId: req.params.id }
-      });
-      
-    } catch (error) {
-      console.error('Message deletion error:', error);
-      res.status(500).json({
-        error: 'Message Deletion Failed',
-        message: '🛠️ Houston, we have a deletion problem!'
+// @desc    Delete entry (admin only)
+// @access  Private
+router.delete('/:id', async (req, res) => {
+  try {
+    const entry = await GuestbookEntry.findByIdAndDelete(req.params.id);
+    
+    if (!entry) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: '🌌 Entry not found!'
       });
     }
+    
+    res.json({
+      success: true,
+      message: '🗑️ Entry deleted!',
+      data: { deletedId: req.params.id }
+    });
+    
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({
+      error: 'Delete Failed',
+      message: '🛠️ Error deleting entry!'
+    });
   }
-);
+});
 
-// @route   PUT /api/guestbook/:id/moderate
-// @desc    Moderate guestbook message (Admin only)
-// @access  Private (Admin)
-router.put('/:id/moderate', 
-  authenticate, 
-  authorize('admin', 'moderator'), 
-  validateMongoId(),
-  trackActivity,
-  async (req, res) => {
-    try {
-      const { status, reason, featured } = req.body;
-      
-      const validStatuses = ['approved', 'rejected', 'flagged', 'hidden'];
-      if (!status || !validStatuses.includes(status)) {
-        return res.status(400).json({
-          error: 'Invalid Status',
-          message: '🚫 Please provide a valid moderation status!'
-        });
-      }
-      
-      const message = await Guestbook.findById(req.params.id);
-      
-      if (!message) {
-        return res.status(404).json({
-          error: 'Message Not Found',
-          message: '🌌 This cosmic transmission doesn\'t exist!'
-        });
-      }
-      
-      message.status = status;
-      message.moderatedBy = req.user._id;
-      message.moderatedAt = new Date();
-      if (reason) message.moderationReason = reason;
-      if (typeof featured === 'boolean') message.featured = featured;
-      
-      await message.save();
-      
-      res.json({
-        success: true,
-        message: `📋 Message has been ${status} successfully!`,
-        data: { 
-          message: {
-            id: message._id,
-            status: message.status,
-            featured: message.featured,
-            moderatedAt: message.moderatedAt
-          }
-        }
-      });
-      
-    } catch (error) {
-      console.error('Message moderation error:', error);
-      res.status(500).json({
-        error: 'Moderation Failed',
-        message: '🛠️ Houston, we have a moderation problem!'
+// @route   PUT /api/guestbook/:id/pin
+// @desc    Pin/unpin entry (admin only)
+// @access  Private
+router.put('/:id/pin', async (req, res) => {
+  try {
+    const entry = await GuestbookEntry.findById(req.params.id);
+    
+    if (!entry) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: '🌌 Entry not found!'
       });
     }
+    
+    entry.pinned = !entry.pinned;
+    await entry.save();
+    
+    res.json({
+      success: true,
+      message: entry.pinned ? '📌 Entry pinned!' : '📌 Entry unpinned!',
+      data: { pinned: entry.pinned }
+    });
+    
+  } catch (error) {
+    console.error('Pin error:', error);
+    res.status(500).json({
+      error: 'Pin Failed',
+      message: '🛠️ Error pinning entry!'
+    });
   }
-);
+});
 
 module.exports = router;

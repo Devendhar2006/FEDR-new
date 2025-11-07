@@ -27,6 +27,11 @@ async function openItemDetail(itemId) {
     const content = document.getElementById('itemDetailContent');
     if (!content) return;
     
+    // FORCE REMOVE BLUR - Override any cached CSS
+    content.style.background = 'rgba(15, 12, 41, 0.99)';
+    content.style.backdropFilter = 'blur(3px)';
+    content.style.webkitBackdropFilter = 'blur(3px)';
+    
     content.innerHTML = `
       <div class="item-detail-loading">
         <div class="spinner"></div>
@@ -35,11 +40,16 @@ async function openItemDetail(itemId) {
     `;
     
     // Fetch item details
+    console.log('🔍 Fetching item details for ID:', itemId);
     const response = await fetch(`/api/portfolio/${itemId}?includeComments=true&commentsLimit=10`);
+    console.log('📡 Response status:', response.status, response.statusText);
+    
     const data = await response.json();
+    console.log('📦 Response data:', data);
     
     if (!response.ok || !data.success) {
-      throw new Error(data.message || 'Failed to load item');
+      const errorMsg = data.message || data.error || `HTTP ${response.status}: Failed to load item`;
+      throw new Error(errorMsg);
     }
     
     const item = data.data.item;
@@ -72,13 +82,19 @@ async function openItemDetail(itemId) {
     }, 100);
     
   } catch (error) {
-    console.error('Error loading item detail:', error);
+    console.error('❌ Error loading item detail:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
     const content = document.getElementById('itemDetailContent');
     if (content) {
       content.innerHTML = `
-        <div class="item-detail-error">
-          <p>❌ Error loading item: ${error.message}</p>
-          <button class="btn-close-detail" onclick="closeItemDetail()">Close</button>
+        <div class="item-detail-error" style="padding: 60px 30px; text-align: center; color: #fff;">
+          <h2 style="color: #ff5673; margin-bottom: 20px;">❌ Error Loading Item</h2>
+          <p style="font-size: 1.1rem; margin-bottom: 30px;">${error.message || 'Unknown error occurred'}</p>
+          <button class="btn-close-detail" onclick="closeItemDetail()" style="background: linear-gradient(135deg, #965aff, #2bc4fa); color: #fff; border: none; padding: 15px 30px; border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+            Close & Try Again
+          </button>
         </div>
       `;
     }

@@ -23,11 +23,192 @@
   padding: 2rem 1.5rem;
 }
 
+/* ==========================================================================
+   PROFILE STEP (Step 1)
+   ========================================================================== */
+
+.profile-step {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.profile-form-section {
+  background: rgba(19, 26, 52, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(150, 90, 255, 0.3);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 24px rgba(10, 14, 26, 0.4);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.section-description {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.next-btn {
+  min-width: 200px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* ==========================================================================
+   USER PROFILE BANNER (Step 2)
+   ========================================================================== */
+
+.user-profile-banner {
+  background: linear-gradient(135deg, rgba(150, 90, 255, 0.2), rgba(43, 196, 250, 0.15));
+  border: 2px solid rgba(150, 90, 255, 0.4);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.banner-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.banner-content h3 {
+  font-size: 1.75rem;
+  color: #fde68a;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.banner-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 600;
+}
+
+.banner-note {
+  font-size: 0.95rem;
+  color: #00ff88;
+  margin: 0;
+  padding: 0.75rem 1.5rem;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.form-description {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.form-description span {
+  color: #fde68a;
+  font-weight: 700;
+}
+
+.user-social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, rgba(150, 90, 255, 0.2), rgba(43, 196, 250, 0.15));
+  border: 2px solid rgba(150, 90, 255, 0.4);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-social-link::before {
+  content: '🔗';
+  position: absolute;
+  right: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.user-social-link:hover::before {
+  opacity: 0.6;
+}
+
+.user-social-link:hover {
+  transform: translateY(-5px) scale(1.05);
+  border-color: #2bc4fa;
+  box-shadow: 0 12px 32px rgba(43, 196, 250, 0.4), 0 0 20px rgba(150, 90, 255, 0.3);
+  background: linear-gradient(135deg, rgba(150, 90, 255, 0.3), rgba(43, 196, 250, 0.25));
+}
+
+.user-social-link:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.user-social-link .icon {
+  font-size: 1.2rem;
+}
+
+.edit-profile-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-profile-btn:hover {
+  transform: scale(1.05);
+}
+
 .contact-grid {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
   gap: 3rem;
   align-items: start;
+}
+
+/* ==========================================================================
+   CONTACT STEP (Step 2)
+   ========================================================================== */
+
+.contact-step {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ==========================================================================
@@ -190,6 +371,14 @@
     grid-template-columns: 1fr;
     gap: 2rem;
   }
+  
+  .profile-form-section {
+    padding: 2rem 1.5rem;
+  }
+  
+  .user-profile-banner {
+    padding: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -201,8 +390,22 @@
     padding: 1.5rem 1rem;
   }
   
-  .send-btn {
+  .profile-form-section {
+    padding: 1.5rem 1rem;
+  }
+  
+  .send-btn, .next-btn {
     width: 100%;
+  }
+  
+  .user-social-links {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .user-social-link {
+    width: 100%;
+    justify-content: center;
   }
 }
 
