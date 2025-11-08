@@ -3,10 +3,8 @@
  * Centralized API communication layer
  */
 
-// Detect the correct API base URL
-// Frontend server on port 3000 now proxies /api requests to backend on port 5000
-// So we always use the current origin + /api
-const API_BASE_URL = window.location.origin + '/api';
+// Use the API base URL from config
+const API_BASE_URL = window.CONFIG?.API_BASE_URL || 'http://localhost:5000/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
