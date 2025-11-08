@@ -6,7 +6,7 @@
 const CONFIG = {
   // IMPORTANT: Replace this with your Render backend URL after deployment
   // Example: 'https://cosmic-devspace-backend.onrender.com'
-  BACKEND_URL: 'https://cosmic-devspace-backend.onrender.com', // Production backend URL
+  BACKEND_URL: 'https://fedf-project-njuy.onrender.com', // Production backend URL
   
   // For local development
   LOCAL_BACKEND: 'http://localhost:5000',
