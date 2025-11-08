@@ -320,12 +320,12 @@ const validateSearch = [
   query('category')
     .optional()
     .isIn(['web', 'mobile', 'ai', 'design', 'backend', 'frontend', 'fullstack', 'game', 'blockchain', 'iot', 'other'])
-    .withMessage('Invalid category filter'),
+    .withMessage('Invalid category'),
   
   handleValidationErrors
 ];
 
-// Analytics validation
+// Analytics validation - Flexible for internal tracking
 const validateAnalyticsEvent = [
   body('eventType')
     .notEmpty()
@@ -333,7 +333,8 @@ const validateAnalyticsEvent = [
     .isIn([
       'page_view', 'user_login', 'user_register', 'project_view', 'project_like',
       'message_post', 'message_like', 'profile_view', 'search', 'download',
-      'share', 'contact', 'error', 'performance', 'custom'
+      'share', 'contact', 'error', 'performance', 'custom', 'guestbook_entry',
+      'profile_creation', 'contact_form', 'blog_view', 'item_view', 'project_creation'
     ])
     .withMessage('Invalid event type'),
   
@@ -345,14 +346,14 @@ const validateAnalyticsEvent = [
     .withMessage('Event name cannot exceed 100 characters'),
   
   body('page.url')
-    .notEmpty()
-    .withMessage('Page URL is required')
+    .optional()
     .isURL()
     .withMessage('Please provide a valid page URL'),
   
   body('sessionId')
-    .notEmpty()
-    .withMessage('Session ID is required'),
+    .optional()
+    .isString()
+    .withMessage('Session ID must be a string'),
   
   handleValidationErrors
 ];

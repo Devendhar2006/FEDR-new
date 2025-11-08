@@ -24,7 +24,7 @@ console.log('🚀 Projects.js loaded - Version 2025-11-07-02');
 
   const state = {
     items: [],
-    filters: { category:'', status:'', sort:'-createdAt', search:'', showMyItems: true },
+    filters: { category:'', status:'', sort:'-createdAt', search:'', showMyItems: false },
     images: [], // for previews
     editingId: null
   };
@@ -122,7 +122,13 @@ console.log('🚀 Projects.js loaded - Version 2025-11-07-02');
         'planning': '🟣'
       }[p.status || 'active'] || '🟢';
       
-      const imageUrl = p.images?.[0]?.url || p.thumbnail || p.image || 'https://via.placeholder.com/400x225/1a2238/965aff?text=' + encodeURIComponent(p.title);
+      // Get image URL and ensure it's valid
+      let imageUrl = p.images?.[0]?.url || p.thumbnail || p.image;
+      // If imageUrl is invalid or doesn't start with http, use SVG placeholder
+      if (!imageUrl || !imageUrl.startsWith('http')) {
+        const title = (p.title || 'Project').substring(0, 30);
+        imageUrl = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='225'%3E%3Crect width='400' height='225' fill='%231a2238'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' fill='%23965aff'%3E${encodeURIComponent(title)}%3C/text%3E%3C/svg%3E`;
+      }
       const views = p.metrics?.views || p.views || 0;
       const likes = p.metrics?.likes || p.likedBy?.length || p.stars || 0;
       
@@ -216,7 +222,8 @@ console.log('🚀 Projects.js loaded - Version 2025-11-07-02');
       const img = el.querySelector('.card-image');
       if (img) {
         img.addEventListener('error', function() {
-          this.src = `https://via.placeholder.com/400x225/1a2238/965aff?text=${encodeURIComponent(p.title || 'Project')}`;
+          const title = (p.title || 'Project').substring(0, 30);
+          this.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='225'%3E%3Crect width='400' height='225' fill='%231a2238'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' fill='%23965aff'%3E${encodeURIComponent(title)}%3C/text%3E%3C/svg%3E`;
         });
       }
       
@@ -259,7 +266,7 @@ console.log('🚀 Projects.js loaded - Version 2025-11-07-02');
         ${statusIcon} ${(p.status || 'active').toUpperCase()}
       </div>
       
-      <img class="detail-image" src="${p.image || 'https://via.placeholder.com/800x450/1a2238/965aff?text=Project'}" alt="${p.title}">
+      <img class="detail-image" src="${(p.image && p.image.startsWith('http')) ? p.image : `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450'%3E%3Crect width='800' height='450' fill='%231a2238'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='32' fill='%23965aff'%3E${encodeURIComponent((p.title || 'Project').substring(0, 30))}%3C/text%3E%3C/svg%3E`}" alt="${p.title}">
       
       <h2 class="detail-title">${p.title}</h2>
       <p class="detail-description">${p.description || ''}</p>
@@ -479,11 +486,14 @@ console.log('🚀 Projects.js loaded - Version 2025-11-07-02');
 
   function buildBody(){
     const f=$('#projectForm');
+    const title = f.title.value.trim();
+    const thumbnailTitle = (title || 'Project').substring(0, 30);
     const b={
       itemType: 'project', // Ensure itemType is set for projects page
-      title:f.title.value.trim(),
+      title: title,
       description:f.description.value.trim(),
       category:f.category.value,
+      thumbnail: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23965aff'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' fill='%23ffffff'%3E${encodeURIComponent(thumbnailTitle)}%3C/text%3E%3C/svg%3E`, // SVG placeholder
       links:f.live.value?{live:f.live.value.trim()}:undefined,
       tags:f.tags.value.split(',').map(s=>s.trim()).filter(Boolean),
       technologies:f.technologies.value.split(',').map(s=>s.trim()).filter(Boolean).map(n=>({name:n})),
@@ -511,12 +521,31 @@ console.log('🚀 Projects.js loaded - Version 2025-11-07-02');
   async function load(){
     console.log('🚀 Loading projects...');
     
-    // Build params from filters
-    const params = { sort: state.filters.sort };
-    
-    // CRITICAL: Add myItems=true to filter by logged-in user
+    // Check if user is logged in - show items only to authenticated users
     const user = authUser();
     const userToken = token();
+    
+    if (!user) {
+      console.log('⛔ User not logged in - showing login prompt');
+      const spinner = $('#loadingSpinner');
+      const emptyState = $('#emptyState');
+      if (spinner) spinner.classList.add('hidden');
+      if (emptyState) {
+        emptyState.classList.remove('hidden');
+        emptyState.innerHTML = `
+          <div class="empty-state-content">
+            <div class="cosmic-planet"></div>
+            <h2>🔒 Login Required</h2>
+            <p>Please <a href="login.html" style="color: #2bc4fa; text-decoration: underline;">sign in</a> to view projects and certificates.</p>
+            <p style="margin-top: 20px;">New user? <a href="register.html" style="color: #fde68a; text-decoration: underline;">Create an account</a></p>
+          </div>
+        `;
+      }
+      return;
+    }
+    
+    // Build params from filters
+    const params = { sort: state.filters.sort };
     
     console.log('🔍 Debug Info:');
     console.log('  - User:', user ? (user.username || user.email) : 'Not logged in');

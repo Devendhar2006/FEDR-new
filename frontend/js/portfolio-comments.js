@@ -52,16 +52,27 @@ async function loadComments(itemId, itemType) {
     commentState.currentItemType = itemType;
     
     const sort = commentState.sortBy === 'newest' ? '-createdAt' : 'createdAt';
-    const response = await fetch(`/api/portfolio/${itemId}/comments?sort=${sort}&limit=50`);
+    const url = `/api/portfolio/${itemId}/comments?sort=${sort}&limit=50`;
+    
+    console.log('🔄 Loading comments from:', url);
+    const response = await fetch(url);
+    console.log('📥 Comments response status:', response.status);
+    
     const data = await response.json();
+    console.log('📦 Comments data:', data);
     
     if (data.success) {
       commentState.comments = data.data.comments || [];
+      console.log('✅ Loaded', commentState.comments.length, 'comments');
       renderComments();
+    } else {
+      console.error('❌ API returned error:', data);
+      renderComments(); // Still render empty state
     }
   } catch (error) {
-    console.error('Error loading comments:', error);
+    console.error('❌ Error loading comments:', error);
     showNotification('❌ Failed to load comments', 'error');
+    renderComments(); // Still render empty state
   }
 }
 
@@ -165,7 +176,7 @@ function renderReply(reply) {
 // Render reply form
 function renderReplyForm(commentId) {
   return `
-    <form class="reply-form" onsubmit="submitReply(event, '${commentId}')">
+    <form class="reply-form" data-comment-id="${commentId}">
       <div class="form-row">
         <input type="text" name="replyName" placeholder="Your name" required maxlength="100">
         <input type="email" name="replyEmail" placeholder="Email (optional)" maxlength="200">
@@ -174,7 +185,7 @@ function renderReplyForm(commentId) {
       <div class="form-actions-inline">
         <span class="char-counter"><span id="replyCounter_${commentId}">0</span>/500</span>
         <div>
-          <button type="button" class="btn-cancel-reply" onclick="cancelReply('${commentId}')">Cancel</button>
+          <button type="button" class="btn-cancel-reply" data-comment-id="${commentId}">Cancel</button>
           <button type="submit" class="btn-submit-reply">Post Reply</button>
         </div>
       </div>
@@ -194,6 +205,25 @@ function setupCommentInteractions(commentEl, comment) {
   const replyBtn = commentEl.querySelector('.comment-reply-btn');
   if (replyBtn) {
     replyBtn.addEventListener('click', () => toggleReplyForm(comment._id));
+  }
+  
+  // Reply form submission
+  const replyForm = commentEl.querySelector('.reply-form');
+  if (replyForm) {
+    replyForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const commentId = replyForm.dataset.commentId;
+      submitReply(e, commentId);
+    });
+  }
+  
+  // Cancel reply button
+  const cancelBtn = commentEl.querySelector('.btn-cancel-reply');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      const commentId = cancelBtn.dataset.commentId;
+      cancelReply(commentId);
+    });
   }
   
   // Character counter for reply form
@@ -321,15 +351,23 @@ function renderCommentPagination() {
   
   container.innerHTML = `
     <div class="pagination-controls">
-      <button class="page-btn" onclick="changeCommentPage(${commentState.currentPage - 1})" ${commentState.currentPage === 1 ? 'disabled' : ''}>
+      <button class="page-btn" data-page="${commentState.currentPage - 1}" ${commentState.currentPage === 1 ? 'disabled' : ''}>
         ← Previous
       </button>
       <span class="page-info">Page ${commentState.currentPage} of ${totalPages}</span>
-      <button class="page-btn" onclick="changeCommentPage(${commentState.currentPage + 1})" ${commentState.currentPage === totalPages ? 'disabled' : ''}>
+      <button class="page-btn" data-page="${commentState.currentPage + 1}" ${commentState.currentPage === totalPages ? 'disabled' : ''}>
         Next →
       </button>
     </div>
   `;
+  
+  // Add event listeners to pagination buttons
+  container.querySelectorAll('.page-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = parseInt(btn.dataset.page);
+      if (!isNaN(page)) changeCommentPage(page);
+    });
+  });
 }
 
 // Change comment page
@@ -346,7 +384,7 @@ function renderCommentForm() {
   return `
     <div class="comment-form-section">
       <div class="section-header">💬 Leave a Comment</div>
-      <form id="newCommentForm" class="comment-form" onsubmit="submitComment(event)">
+      <form id="newCommentForm" class="comment-form">
         <div class="form-row">
           <input type="text" name="commentName" id="commentName" placeholder="Your name *" required maxlength="100">
           <input type="email" name="commentEmail" id="commentEmail" placeholder="Email (optional)" maxlength="200">
@@ -354,7 +392,7 @@ function renderCommentForm() {
         <div class="emoji-picker-container">
           <div class="emoji-picker-label">Add emoji:</div>
           <div class="emoji-picker" id="emojiPicker">
-            ${EMOJI_PICKER.map(emoji => `<button type="button" class="emoji-btn" onclick="insertEmoji('${emoji}')">${emoji}</button>`).join('')}
+            ${EMOJI_PICKER.map(emoji => `<button type="button" class="emoji-btn" data-emoji="${emoji}">${emoji}</button>`).join('')}
           </div>
         </div>
         <textarea name="commentText" id="commentText" placeholder="Write your comment here... (max 500 characters)" required maxlength="500"></textarea>
@@ -389,11 +427,15 @@ function insertEmoji(emoji) {
 async function submitComment(event) {
   event.preventDefault();
   
+  console.log('💬 Submitting comment...');
+  
   const form = event.target;
   const formData = new FormData(form);
   const name = formData.get('commentName').trim();
   const email = formData.get('commentEmail').trim();
   const text = formData.get('commentText').trim();
+  
+  console.log('📝 Comment data:', { name, email: email || '(none)', text: text.substring(0, 50) + '...' });
   
   if (!name || !text) {
     showNotification('❌ Please fill in all required fields', 'error');
@@ -406,23 +448,30 @@ async function submitComment(event) {
   submitBtn.disabled = true;
   
   try {
-    const response = await fetch(`/api/portfolio/${commentState.currentItemId}/comments`, {
+    const url = `/api/portfolio/${commentState.currentItemId}/comments`;
+    console.log('🔄 Posting comment to:', url);
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email: email || undefined, text })
     });
     
+    console.log('📥 Comment response status:', response.status);
     const data = await response.json();
+    console.log('📦 Comment response data:', data);
     
     if (!response.ok) {
       throw new Error(data.message || 'Failed to post comment');
     }
     
+    console.log('✅ Comment posted successfully!');
     showNotification('💬 Comment posted successfully!', 'success');
     form.reset();
     document.getElementById('commentCounter').textContent = '0';
     
     // Reload comments
+    console.log('🔄 Reloading comments...');
     await loadComments(commentState.currentItemId, commentState.currentItemType);
     
     // Scroll to top of comments
@@ -482,6 +531,8 @@ function initializeCommentsSection(itemId, itemType) {
     return;
   }
   
+  console.log('🔧 Initializing comments section for item:', itemId);
+  
   commentState.currentItemId = itemId;
   commentState.currentItemType = itemType;
   commentState.currentPage = 1;
@@ -492,7 +543,7 @@ function initializeCommentsSection(itemId, itemType) {
     <div class="comments-header">
       <h3>💬 Comments</h3>
       <div class="comment-sort">
-        <select id="commentSort" onchange="changeCommentSort(this.value)">
+        <select id="commentSort">
           <option value="newest" selected>Newest First</option>
           <option value="oldest">Oldest First</option>
         </select>
@@ -502,6 +553,30 @@ function initializeCommentsSection(itemId, itemType) {
     <div id="commentsContainer" class="comments-list"></div>
     <div id="commentsPagination" class="comments-pagination"></div>
   `;
+  
+  // Setup comment form submission
+  const commentForm = document.getElementById('newCommentForm');
+  if (commentForm) {
+    commentForm.addEventListener('submit', submitComment);
+    console.log('✅ Comment form event listener attached');
+  }
+  
+  // Setup comment sort dropdown
+  const sortSelect = document.getElementById('commentSort');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', (e) => changeCommentSort(e.target.value));
+  }
+  
+  // Setup emoji buttons
+  const emojiPicker = document.getElementById('emojiPicker');
+  if (emojiPicker) {
+    emojiPicker.addEventListener('click', (e) => {
+      if (e.target.classList.contains('emoji-btn')) {
+        const emoji = e.target.dataset.emoji;
+        if (emoji) insertEmoji(emoji);
+      }
+    });
+  }
   
   // Setup character counter
   const textarea = document.getElementById('commentText');
@@ -526,6 +601,7 @@ function initializeCommentsSection(itemId, itemType) {
   }
   
   // Load comments
+  console.log('🔄 Loading comments...');
   loadComments(itemId, itemType);
 }
 
@@ -537,6 +613,7 @@ function changeCommentSort(sortBy) {
 }
 
 // Make functions globally available
+window.initializeCommentsSection = initializeCommentsSection;
 window.loadComments = loadComments;
 window.submitComment = submitComment;
 window.submitReply = submitReply;
@@ -546,5 +623,6 @@ window.toggleCommentLike = toggleCommentLike;
 window.insertEmoji = insertEmoji;
 window.changeCommentPage = changeCommentPage;
 window.changeCommentSort = changeCommentSort;
-window.initializeCommentsSection = initializeCommentsSection;
+
+console.log('✅ Portfolio Comments system loaded');
 

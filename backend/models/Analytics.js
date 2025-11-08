@@ -7,9 +7,10 @@ const analyticsSchema = new mongoose.Schema({
     required: [true, 'Event type is required for cosmic tracking'],
     enum: {
       values: [
-        'page_view', 'user_login', 'user_register', 'project_view', 'project_like', 
+        'page_view', 'user_login', 'user_register', 'user_logout', 'project_view', 'project_like', 
         'message_post', 'message_like', 'profile_view', 'search', 'download',
-        'share', 'contact', 'error', 'performance', 'custom'
+        'share', 'contact', 'error', 'performance', 'custom', 'guestbook_entry',
+        'profile_creation', 'contact_form', 'blog_view', 'item_view', 'project_creation'
       ],
       message: 'Event type must be one of the specified tracking events'
     }
@@ -31,14 +32,16 @@ const analyticsSchema = new mongoose.Schema({
   
   sessionId: {
     type: String,
-    required: true,
+    required: false,
+    default: 'anonymous',
     index: true
   },
   
   // Request Information
   ipAddress: {
     type: String,
-    required: true
+    required: false,
+    default: '0.0.0.0'
   },
   
   userAgent: {
@@ -79,7 +82,8 @@ const analyticsSchema = new mongoose.Schema({
   page: {
     url: {
       type: String,
-      required: true
+      required: false,
+      default: ''
     },
     title: String,
     path: String,

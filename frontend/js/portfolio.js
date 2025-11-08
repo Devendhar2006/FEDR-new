@@ -9,12 +9,10 @@ console.log('🚀 Portfolio.js loaded - Version 2025-11-07-03');
 (function() {
   'use strict';
   
-  // API Configuration - detect correct backend URL
-  const API_BASE_URL = window.location.port === '8080' 
-    ? 'http://localhost:5000/api' 
-    : '/api';
+  // API Configuration - Use proxy at /api
+  const API_BASE_URL = window.location.origin + '/api';
   
-  console.log('📡 API Base URL:', API_BASE_URL);
+  console.log('📡 Portfolio API Base URL:', API_BASE_URL);
   
   // Selectors
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
@@ -90,14 +88,34 @@ console.log('🚀 Portfolio.js loaded - Version 2025-11-07-03');
   
   async function fetchPortfolioItems() {
     showLoading(true);
+    
+    // Check if user is logged in - show items only to authenticated users
+    const user = authUser();
+    if (!user) {
+      showLoading(false);
+      showEmptyState(true);
+      const emptyState = $('#emptyState');
+      if (emptyState) {
+        emptyState.innerHTML = `
+          <div class="empty-state-content">
+            <div class="cosmic-planet"></div>
+            <h2>🔒 Login Required</h2>
+            <p>Please <a href="login.html" style="color: #2bc4fa; text-decoration: underline;">sign in</a> to view portfolio items and certificates.</p>
+            <p style="margin-top: 20px;">New user? <a href="register.html" style="color: #fde68a; text-decoration: underline;">Create an account</a></p>
+          </div>
+        `;
+      }
+      return;
+    }
+    
     try {
-      const user = authUser();
       const params = new URLSearchParams();
       
-      // CRITICAL: Add myItems=true to filter by logged-in user
-      if (user) {
-        params.append('myItems', 'true');
-      }
+      // Show all items by default (not just user's items)
+      // To show only user's items, uncomment the line below
+      // if (user) {
+      //   params.append('myItems', 'true');
+      // }
       
       if (state.filters.category) params.append('category', state.filters.category);
       if (state.filters.search) params.append('search', state.filters.search);
@@ -216,7 +234,14 @@ console.log('🚀 Portfolio.js loaded - Version 2025-11-07-03');
     
     const itemType = item.itemType || 'project';
     const itemIcon = itemType === 'certification' ? '🎓' : itemType === 'achievement' ? '🏆' : '📝';
-    const imageUrl = item.images?.[0]?.url || item.thumbnail || item.certification?.badgeUrl || 'https://via.placeholder.com/400x300/965aff/ffffff?text=' + encodeURIComponent(item.title);
+    
+    // Get image URL and validate it
+    let imageUrl = item.images?.[0]?.url || item.thumbnail || item.certification?.badgeUrl;
+    // If imageUrl is invalid or doesn't start with http, use SVG placeholder
+    if (!imageUrl || !imageUrl.startsWith('http')) {
+      const title = (item.title || 'Item').substring(0, 30);
+      imageUrl = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23965aff'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' fill='%23ffffff'%3E${encodeURIComponent(title)}%3C/text%3E%3C/svg%3E`;
+    }
     
     // Get organization/category info
     let orgInfo = '';
@@ -244,7 +269,7 @@ console.log('🚀 Portfolio.js loaded - Version 2025-11-07-03');
     
     card.innerHTML = `
       <div class="portfolio-card-image">
-        <img src="${imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300/965aff/ffffff?text=${encodeURIComponent(item.title)}'">
+        <img src="${imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect width=%27400%27 height=%27300%27 fill=%27%23965aff%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 dominant-baseline=%27middle%27 text-anchor=%27middle%27 font-family=%27Arial, sans-serif%27 font-size=%2724%27 fill=%27%23ffffff%27%3E${encodeURIComponent((item.title || 'Item').substring(0, 30))}%3C/text%3E%3C/svg%3E'">
         <div class="portfolio-card-overlay">
           <button class="btn-view-details" onclick="event.stopPropagation(); openItemDetail('${item._id}')">
             👁️ View Details & Comments

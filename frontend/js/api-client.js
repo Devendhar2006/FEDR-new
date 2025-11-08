@@ -4,11 +4,9 @@
  */
 
 // Detect the correct API base URL
-// If running on port 8080 (frontend dev server), point to backend on port 5000
-// Otherwise, use the same origin (for production or when served from backend)
-const API_BASE_URL = window.location.port === '8080' 
-  ? 'http://localhost:5000/api' 
-  : window.location.origin + '/api';
+// Frontend server on port 3000 now proxies /api requests to backend on port 5000
+// So we always use the current origin + /api
+const API_BASE_URL = window.location.origin + '/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
@@ -42,20 +40,38 @@ const apiRequest = async (endpoint, options = {}) => {
   };
   
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    const data = await response.json();
+    const fullUrl = `${API_BASE_URL}${endpoint}`;
+    console.log(`🌐 API Request: ${config.method || 'GET'} ${fullUrl}`);
+    console.log(`📦 Request config:`, config);
+    const response = await fetch(fullUrl, config);
+    console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+    
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    const data = contentType && contentType.includes('application/json') 
+      ? await response.json() 
+      : { message: await response.text() };
     
     if (!response.ok) {
+      console.error(`❌ Response not OK. Status: ${response.status}, Data:`, data);
       // Create a detailed error object
       const error = new Error(data.message || data.error || 'Request failed');
       error.errors = data.errors; // Validation errors if any
       error.statusCode = response.status;
+      console.error('❌ API Error:', error);
       throw error;
     }
     
+    console.log('✅ API Response:', data);
     return data;
   } catch (error) {
-    console.error('API Request Error:', error);
+    // Network or other errors
+    if (error.message === 'Failed to fetch') {
+      console.error('❌ Cannot connect to backend. Is the server running on port 5000?');
+      error.message = '🚫 Cannot connect to server. Please check if backend is running.';
+    } else {
+      console.error('❌ API Request Error:', error);
+    }
     throw error;
   }
 };
@@ -441,3 +457,6 @@ window.CosmicAPI = {
 };
 
 console.log('🚀 Cosmic API Client loaded successfully!');
+console.log(`🌐 API Base URL: ${API_BASE_URL}`);
+console.log(`📍 Frontend running on: ${window.location.origin}`);
+console.log(`✅ API Client Version: 20251107-1`);

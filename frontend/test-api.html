@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Test Page</title>
+  <style>
+    body {
+      background: #131a34;
+      color: #eceaff;
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test-result {
+      background: rgba(43, 196, 250, 0.1);
+      border: 1px solid #2bc4fa;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
+    .success { border-color: #00d4aa; background: rgba(0, 212, 170, 0.1); }
+    .error { border-color: #ff568f; background: rgba(255, 86, 143, 0.1); }
+    button {
+      background: linear-gradient(90deg, #965aff, #2bc4fa);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Cosmic API Test Page</h1>
+  
+  <div>
+    <h2>Test Results:</h2>
+    <div id="results"></div>
+  </div>
+  
+  <div>
+    <h2>Actions:</h2>
+    <button onclick="testHealthCheck()">Test Health Check</button>
+    <button onclick="testRegister()">Test Register</button>
+    <button onclick="clearResults()">Clear Results</button>
+  </div>
+
+  <script src="./js/api-client.js"></script>
+  <script>
+    function addResult(title, status, message, data = null) {
+      const results = document.getElementById('results');
+      const div = document.createElement('div');
+      div.className = `test-result ${status}`;
+      div.innerHTML = `
+        <h3>${title}</h3>
+        <p><strong>Status:</strong> ${status.toUpperCase()}</p>
+        <p><strong>Message:</strong> ${message}</p>
+        ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+      `;
+      results.appendChild(div);
+    }
+
+    async function testHealthCheck() {
+      try {
+        const response = await fetch('http://localhost:5000/api/health');
+        const data = await response.json();
+        addResult('Health Check', 'success', 'Backend is running!', data);
+      } catch (error) {
+        addResult('Health Check', 'error', error.message);
+      }
+    }
+
+    async function testRegister() {
+      try {
+        const testUser = {
+          username: 'testuser' + Date.now(),
+          email: `test${Date.now()}@test.com`,
+          password: 'Test123!',
+          confirmPassword: 'Test123!'
+        };
+        
+        const response = await CosmicAPI.auth.register(testUser);
+        addResult('Registration Test', 'success', 'Registration successful!', response);
+      } catch (error) {
+        addResult('Registration Test', 'error', error.message, {
+          statusCode: error.statusCode,
+          errors: error.errors
+        });
+      }
+    }
+
+    function clearResults() {
+      document.getElementById('results').innerHTML = '';
+    }
+
+    // Test on load
+    window.addEventListener('load', () => {
+      console.log('🧪 Test page loaded');
+      testHealthCheck();
+    });
+  </script>
+</body>
+</html>
